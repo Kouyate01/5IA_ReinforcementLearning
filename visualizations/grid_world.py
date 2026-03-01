@@ -151,3 +151,33 @@ def visualize_gridworld_policy_interface(env, policy, cell_size=120, margin=40, 
                             running = False
         clock.tick(60)
     pygame.quit()
+
+
+if __name__ == "__main__":
+    # Demo : visualize a simple GridWorld policy
+    from envs.grid_world.grid_world import GridWorld
+    
+    print("Initializing GridWorld visualization...")
+    env = GridWorld(n_rows=4, n_cols=4, start_state=(0, 0))
+    
+    # Créer une politique simple : aller à droite (3) puis en bas (1)
+    # Pour atteindre l'objectif en bas-à-droite (3,3)
+    simple_policy = []
+    for idx in range(env.n_states):
+        state = env.index_to_state(idx)
+        row, col = state
+        
+        if env.is_terminal(state):
+            simple_policy.append(-1)  # State terminal
+        else:
+            # Priorité : bas (1) si pas à la dernière ligne, sinon droite (3)
+            if row < env.n_rows - 1:
+                simple_policy.append(1)  # down
+            elif col < env.n_cols - 1:
+                simple_policy.append(3)  # right
+            else:
+                simple_policy.append(-1)
+    
+    print(f"Policy: {simple_policy}")
+    print("Launching visualization interface...")
+    visualize_gridworld_policy_interface(env, simple_policy)

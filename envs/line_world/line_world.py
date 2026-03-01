@@ -100,3 +100,26 @@ class LineWorld:
         if state < self.size - 1:
             actions.append(1)  # droite
         return actions
+
+
+if __name__ == "__main__":
+    # demo interactive simple de LineWorld
+    import numpy as np
+    print("LineWorld demo:\n")
+    env = LineWorld(size=7, start_state=3)
+    env.reset()
+    env.render()
+    print("Actions valides en début :", env.get_valid_actions(env.state))
+    # exécute une trajectoire aléatoire jusqu'à un état terminal
+    while True:
+        valid = env.get_valid_actions(env.state)
+        if not valid:
+            break
+        action = np.random.choice(valid)
+        action_name = "gauche" if action == 0 else "droite"
+        next_state, reward, done = env.step(action)
+        print(f"action {action_name} ({action}) -> état {next_state}, récompense {reward}, done={done}")
+        env.render()
+        if done:
+            print("Atteint un état terminal.")
+            break

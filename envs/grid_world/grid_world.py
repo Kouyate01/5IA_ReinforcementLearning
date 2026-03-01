@@ -145,3 +145,25 @@ class GridWorld:
         if col < self.n_cols - 1:
             actions.append(3)  # right
         return actions
+
+
+if __name__ == "__main__":
+    # simple interactive demo when module is run directly
+    import numpy as np
+    print("GridWorld demo:\n")
+    env = GridWorld()
+    env.reset()
+    env.render()
+    print("Actions valides en début :", env.get_valid_actions(env.state))
+    # exécute une trajectoire aléatoire jusqu'à un état terminal
+    while True:
+        valid = env.get_valid_actions(env.state)
+        if not valid:
+            break
+        action = np.random.choice(valid)
+        next_state, reward, done = env.step(action)
+        print(f"action {action} -> état {next_state}, récompense {reward}, done={done}")
+        env.render()
+        if done:
+            print("Atteint un état terminal.")
+            break

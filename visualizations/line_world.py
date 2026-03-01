@@ -119,5 +119,27 @@ def visualize_lineworld_policy_interface(env, policy, cell_height=480):
                         elif btn['label'] == "Quit":
                             running = False
 
+
         clock.tick(60)
     pygame.quit()
+
+
+if __name__ == "__main__":
+    # Demo : visualize a simple LineWorld policy
+    from envs.line_world.line_world import LineWorld
+    
+    print("Initializing LineWorld visualization...")
+    env = LineWorld(size=7, start_state=3)
+    
+    # Créer une politique simple : toujours aller à droite (1)
+    # pour atteindre l'objectif gagnant (gain de +1)
+    simple_policy = []
+    for state in range(env.size):
+        if env.is_terminal(state):
+            simple_policy.append(-1)  # State terminal
+        else:
+            simple_policy.append(1)  # Always go right
+    
+    print(f"Policy: {simple_policy}")
+    print("Launching visualization interface...")
+    visualize_lineworld_policy_interface(env, simple_policy)
