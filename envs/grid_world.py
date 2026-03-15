@@ -6,58 +6,31 @@ from base_env import BaseEnv
 
 class GridWorld(BaseEnv):
     """
-    Environnement GridWorld (2D).
-    
-    Le joueur se déplace sur une grille de rows x cols cases.
-    - Il commence en haut à gauche (0, 0).
-    - L'objectif est d'atteindre la case en bas à droite (rows-1, cols-1) = +1.
-    - Des cases "trou" = récompense -1 et fin de partie.
-    - Chaque pas = récompense -0.01 (encourage les chemins courts).
-    - Les murs bloquent le déplacement (le joueur reste en place).
-    
-    Actions:
-        0 → haut
-        1 → bas
-        2 → gauche
-        3 → droite
-    
+    Environnement GridWorld (2D) — grille 5x5.
+
+    Le joueur démarre en haut à gauche (0, 0).
+    L'objectif est d'atteindre la case en bas à droite (4, 4).
+    Les bords bloquent le déplacement (le joueur reste en place).
+    Chaque pas intermédiaire coûte -0.01.
+
     State encoding:
-        Vecteur one-hot de taille rows*cols (position courante).
-        Ex: grille 3x3, position (1,2) → index=5 → vecteur de taille 9
+        Vecteur one-hot de taille rows*cols.
+        Ex: grille 5x5, position (1,2) → index 7 vaut 1.0, reste 0.0.
     """
 
-    # Offsets (row, col) pour chaque action
-    _MOVES = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    _ACTION_NAMES = ["↑", "↓", "←", "→"]
+    ACTIONS = [0, 1, 2, 3]
+    ACTION_NAMES = {0: "Up", 1: "Down", 2: "Left", 3: "Right"}
 
-    def __init__(self, rows: int = 4, cols: int = 4, holes: List[Tuple[int, int]] = None):
-        """
-        Args:
-            rows (int): Nombre de lignes.
-            cols (int): Nombre de colonnes.
-            holes (List[Tuple[int,int]]): Positions des cases "trou" (défaites).
-        """
-        assert rows >= 2 and cols >= 2, "Grille trop petite."
+    # (delta_row, delta_col) pour chaque action
+    _MOVES = {0: (-1, 0), 1: (1, 0), 2: (0, -1), 3: (0, 1)}
+
+    def __init__(self, rows: int = 5, cols: int = 5):
         self._rows = rows
         self._cols = cols
-        
-        # Trous par défaut si non spécifiés
-        if holes is None:
-            holes = [(1, 1), (2, 2)]  # trous par défaut pour 4x4
-        self._holes = set(holes)
-        
-        # Vérifications
-        assert (0, 0) not in self._holes, "La case de départ ne peut pas être un trou."
-        assert (rows - 1, cols - 1) not in self._holes, "La case d'arrivée ne peut pas être un trou."
-
         self._row = 0
         self._col = 0
         self._done = False
         self._last_reward = 0.0
-
-    # -------------------------------------------------------------------------
-    # Implémentation des méthodes abstraites
-    # -------------------------------------------------------------------------
 
     def reset(self) -> np.ndarray:
         self._row = 0
@@ -67,34 +40,31 @@ class GridWorld(BaseEnv):
         return self.get_state()
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool]:
-        assert not self._done, "La partie est terminée, appelez reset()."
-        assert 0 <= action <= 3, f"Action invalide : {action}"
+        assert not self._done, "Partie terminée, appelez reset()."
+        assert action in self.ACTIONS, f"Action invalide : {action}"
 
         dr, dc = self._MOVES[action]
         new_row = self._row + dr
         new_col = self._col + dc
 
-        # Mur → on reste en place
+        # Si le déplacement sort de la grille, on reste en place
         if 0 <= new_row < self._rows and 0 <= new_col < self._cols:
             self._row = new_row
             self._col = new_col
 
-        # Vérification de l'état
-        if (self._row, self._col) in self._holes:
-            self._last_reward = -1.0
-            self._done = True
-        elif self._row == self._rows - 1 and self._col == self._cols - 1:
+        # Objectif atteint
+        if self._row == self._rows - 1 and self._col == self._cols - 1:
             self._last_reward = 1.0
             self._done = True
         else:
-            self._last_reward = -0.01  # pénalité de temps
+            self._last_reward = -0.01
 
         return self.get_state(), self._last_reward, self._done
 
     def available_actions(self) -> List[int]:
         if self._done:
             return []
-        return [0, 1, 2, 3]
+        return self.ACTIONS
 
     def is_game_over(self) -> bool:
         return self._done
@@ -116,8 +86,6 @@ class GridWorld(BaseEnv):
                     cell = " X "
                 elif (r, c) == (self._rows - 1, self._cols - 1):
                     cell = " G "
-                elif (r, c) in self._holes:
-                    cell = " O "
                 else:
                     cell = "   "
                 row_str += cell + "|"
@@ -130,11 +98,11 @@ class GridWorld(BaseEnv):
 
     @property
     def action_size(self) -> int:
-        return 4
+        return len(self.ACTIONS)
 
     @property
     def current_player(self) -> int:
-        return 0  # Solo
+        return 0
 
     def num_players(self) -> int:
         return 1
