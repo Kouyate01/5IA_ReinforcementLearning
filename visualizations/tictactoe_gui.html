@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TicTacToe — Environnement RL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0e0f14;
+    --surface:   #161820;
+    --panel:     #1c1e28;
+    --border:    #2a2d3e;
+    --accent:    #e8c547;
+    --x-color:   #e05c5c;
+    --o-color:   #5ca8e0;
+    --text:      #d8daea;
+    --muted:     #6b6f8a;
+    --win-line:  #e8c547;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-serif: 'DM Serif Display', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  header h1 {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+
+  header span {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    background: var(--surface);
+  }
+
+  .tab {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 22px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── Main layout ── */
+  .content { display: none; flex: 1; }
+  .content.active { display: flex; }
+
+  /* ══════════════════════════════════════
+     TAB 1 — GAME
+  ══════════════════════════════════════ */
+  #tab-game {
+    flex-direction: row;
+    padding: 32px;
+    gap: 32px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .game-col { flex: 0 0 auto; }
+  .info-col { flex: 1 1 300px; min-width: 280px; }
+
+  /* Board */
+  .board-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 120px);
+    grid-template-rows: repeat(3, 120px);
+    gap: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .cell {
+    width: 120px; height: 120px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem;
+    cursor: pointer;
+    transition: background .15s;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    user-select: none;
+  }
+
+  .cell:nth-child(3n)   { border-right: none; }
+  .cell:nth-child(n+7)  { border-bottom: none; }
+
+  .cell:hover:not(.taken) { background: rgba(232,197,71,.06); }
+
+  .cell .mark {
+    font-family: var(--font-serif);
+    font-style: italic;
+    opacity: 0;
+    transform: scale(.4) rotate(-20deg);
+    transition: opacity .25s, transform .25s;
+    pointer-events: none;
+  }
+
+  .cell.x .mark { color: var(--x-color); opacity: 1; transform: scale(1) rotate(0deg); }
+  .cell.o .mark { color: var(--o-color); opacity: 1; transform: scale(1) rotate(0deg); }
+  .cell.taken { cursor: not-allowed; }
+
+  /* win highlight */
+  .cell.win-cell::after {
+    content: '';
+    position: absolute; inset: 4px;
+    border-radius: 2px;
+    background: rgba(232,197,71,.12);
+    border: 1px solid var(--accent);
+    pointer-events: none;
+  }
+
+  /* Status bar */
+  .status-bar {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.green  { background: #5ce07a; box-shadow: 0 0 6px #5ce07a; }
+  .dot.yellow { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .dot.red    { background: var(--x-color); box-shadow: 0 0 6px var(--x-color); }
+  .dot.blue   { background: var(--o-color); box-shadow: 0 0 6px var(--o-color); }
+
+  /* Controls */
+  .controls { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 9px 18px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #f0d060; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text); }
+
+  /* Stats panel */
+  .stats-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .stats-panel h3 {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 0.8rem;
+  }
+
+  .stat-row .label { color: var(--muted); }
+  .stat-row .val   { font-weight: 600; color: var(--text); }
+  .stat-row .val.win   { color: #5ce07a; }
+  .stat-row .val.loss  { color: var(--x-color); }
+  .stat-row .val.draw  { color: var(--o-color); }
+
+  /* Bar chart */
+  .bar-row { margin-top: 14px; }
+  .bar-label { font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .bar-track { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .bar-fill  { height: 100%; border-radius: 3px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .bar-fill.win  { background: #5ce07a; }
+  .bar-fill.draw { background: var(--o-color); }
+  .bar-fill.loss { background: var(--x-color); }
+
+  /* Mode selector */
+  .mode-select {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .mode-btn {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .mode-btn.active {
+    background: rgba(232,197,71,.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Index hint */
+  .index-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 32px);
+    gap: 2px;
+    margin-top: 10px;
+  }
+
+  .idx-cell {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font-size: 0.7rem;
+    color: var(--muted);
+    border-radius: 2px;
+  }
+
+  /* ══════════════════════════════════════
+     TAB 2 — SIMULATION
+  ══════════════════════════════════════ */
+  #tab-sim {
+    flex-direction: column;
+    padding: 32px;
+    gap: 24px;
+    max-width: 860px;
+  }
+
+  .sim-header { display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+
+  .sim-header h2 {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .sim-config { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  .input-group label { font-size: 0.65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+  .input-group input, .input-group select {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  .input-group input:focus,
+  .input-group select:focus { border-color: var(--accent); }
+
+  /* Progress */
+  .progress-wrap { display: none; }
+  .progress-wrap.visible { display: block; }
+
+  .progress-track {
+    height: 3px;
+    background: var(--panel);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .1s linear;
+    width: 0%;
+  }
+
+  /* Results grid */
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .metric-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+  }
+
+  .metric-card .m-label {
+    font-size: 0.65rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .metric-card .m-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .metric-card .m-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .m-value.green  { color: #5ce07a; }
+  .m-value.yellow { color: var(--accent); }
+  .m-value.red    { color: var(--x-color); }
+  .m-value.blue   { color: var(--o-color); }
+
+  /* Log terminal */
+  .terminal {
+    background: #0a0b0f;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 20px;
+    font-size: 0.75rem;
+    line-height: 1.8;
+    height: 220px;
+    overflow-y: auto;
+    color: var(--muted);
+  }
+
+  .terminal .t-green  { color: #5ce07a; }
+  .terminal .t-yellow { color: var(--accent); }
+  .terminal .t-blue   { color: var(--o-color); }
+  .terminal .t-red    { color: var(--x-color); }
+  .terminal .t-white  { color: var(--text); }
+
+  /* ══════════════════════════════════════
+     TAB 3 — ENCODINGS
+  ══════════════════════════════════════ */
+  #tab-enc {
+    flex-direction: column;
+    padding: 32px;
+    gap: 28px;
+    max-width: 860px;
+  }
+
+  .enc-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+  }
+
+  .enc-section h2 {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--accent);
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+
+  .enc-section .subtitle {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: .06em;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .enc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 640px) { .enc-grid { grid-template-columns: 1fr; } }
+
+  .enc-block h4 {
+    font-size: 0.68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* Interactive board demo */
+  .enc-board {
+    display: grid;
+    grid-template-columns: repeat(3, 44px);
+    gap: 3px;
+    margin-bottom: 12px;
+  }
+
+  .enc-cell {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background .15s;
+    user-select: none;
+  }
+
+  .enc-cell:hover { background: rgba(232,197,71,.07); }
+  .enc-cell.ex { color: var(--x-color); }
+  .enc-cell.eo { color: var(--o-color); }
+
+  /* Vector display */
+  .vec-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .vec-cell {
+    width: 32px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: background .2s, color .2s, border-color .2s;
+  }
+
+  .vec-cell.vx { background: rgba(224,92,92,.15); border-color: var(--x-color); color: var(--x-color); }
+  .vec-cell.vo { background: rgba(92,168,224,.15); border-color: var(--o-color); color: var(--o-color); }
+  .vec-cell.active { background: rgba(232,197,71,.2); border-color: var(--accent); color: var(--accent); }
+
+  .vec-indices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 3px;
+  }
+
+  .vec-idx {
+    width: 32px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+
+  /* Action selector */
+  .action-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 44px);
+    gap: 3px;
+    margin-bottom: 12px;
+  }
+
+  .action-cell {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--muted);
+  }
+
+  .action-cell:hover { background: rgba(232,197,71,.1); border-color: var(--accent); color: var(--accent); }
+  .action-cell.selected { background: rgba(232,197,71,.2); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+
+  .prop-list { margin-top: 12px; }
+  .prop-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(42,45,62,.6);
+    font-size: 0.76rem;
+  }
+
+  .prop-row:last-child { border-bottom: none; }
+  .prop-row .pk { color: var(--muted); }
+  .prop-row .pv { color: var(--text); font-weight: 600; }
+
+  /* Code block */
+  .code-block {
+    background: #0a0b0f;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 16px;
+    font-size: 0.73rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    color: #a0a8c8;
+    margin-top: 10px;
+  }
+
+  .ck { color: #7ecce0; }   /* keyword */
+  .cc { color: #5ce07a; }   /* comment */
+  .cs { color: #e8c547; }   /* string */
+  .cn { color: #e89f47; }   /* number */
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* spin anim */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { display: inline-block; width: 10px; height: 10px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+
+  /* pulse */
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+  .pulse { animation: pulse 1.5s ease infinite; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TicTacToe ×RL</h1>
+  <span>Environnement Deep Reinforcement Learning</span>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" onclick="switchTab('game', this)">▶ Jeu</button>
+  <button class="tab" onclick="switchTab('sim', this)">⏱ Simulation</button>
+  <button class="tab" onclick="switchTab('enc', this)">⊞ Encodings</button>
+</nav>
+
+<!-- ═══════════════════ TAB 1 — JEU ═══════════════════ -->
+<div id="tab-game" class="content active">
+  <div class="game-col">
+
+    <div class="mode-select">
+      <button class="mode-btn active" id="mode-human" onclick="setMode('human')">Humain vs Random</button>
+      <button class="mode-btn" id="mode-auto"  onclick="setMode('auto')">Auto (Random vs Random)</button>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board" id="board">
+        <div class="cell" data-i="0" onclick="humanMove(0)"><span class="mark"></span></div>
+        <div class="cell" data-i="1" onclick="humanMove(1)"><span class="mark"></span></div>
+        <div class="cell" data-i="2" onclick="humanMove(2)"><span class="mark"></span></div>
+        <div class="cell" data-i="3" onclick="humanMove(3)"><span class="mark"></span></div>
+        <div class="cell" data-i="4" onclick="humanMove(4)"><span class="mark"></span></div>
+        <div class="cell" data-i="5" onclick="humanMove(5)"><span class="mark"></span></div>
+        <div class="cell" data-i="6" onclick="humanMove(6)"><span class="mark"></span></div>
+        <div class="cell" data-i="7" onclick="humanMove(7)"><span class="mark"></span></div>
+        <div class="cell" data-i="8" onclick="humanMove(8)"><span class="mark"></span></div>
+      </div>
+    </div>
+
+    <div class="status-bar" id="status-bar">
+      <div class="dot green pulse"></div>
+      <span id="status-text">Votre tour — vous jouez X</span>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" onclick="resetGame()">Nouvelle partie</button>
+      <button class="btn btn-ghost"   onclick="autoPlay()"  id="auto-btn" style="display:none">▶ Jouer un coup</button>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Indexation des cases</div>
+      <div class="index-grid">
+        <div class="idx-cell">0</div><div class="idx-cell">1</div><div class="idx-cell">2</div>
+        <div class="idx-cell">3</div><div class="idx-cell">4</div><div class="idx-cell">5</div>
+        <div class="idx-cell">6</div><div class="idx-cell">7</div><div class="idx-cell">8</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-col">
+    <div class="stats-panel">
+      <h3>Statistiques de session</h3>
+      <div class="stat-row"><span class="label">Parties jouées</span><span class="val" id="s-total">0</span></div>
+      <div class="stat-row"><span class="label">Victoires (X)</span><span class="val win" id="s-wins">0</span></div>
+      <div class="stat-row"><span class="label">Défaites (O)</span><span class="val loss" id="s-losses">0</span></div>
+      <div class="stat-row"><span class="label">Matchs nuls</span><span class="val draw" id="s-draws">0</span></div>
+
+      <div class="bar-row" style="margin-top:16px;">
+        <div class="bar-label"><span>Victoires</span><span id="pct-win">—</span></div>
+        <div class="bar-track"><div class="bar-fill win" id="bar-win" style="width:0%"></div></div>
+      </div>
+      <div class="bar-row" style="margin-top:8px;">
+        <div class="bar-label"><span>Nuls</span><span id="pct-draw">—</span></div>
+        <div class="bar-track"><div class="bar-fill draw" id="bar-draw" style="width:0%"></div></div>
+      </div>
+      <div class="bar-row" style="margin-top:8px;">
+        <div class="bar-label"><span>Défaites</span><span id="pct-loss">—</span></div>
+        <div class="bar-track"><div class="bar-fill loss" id="bar-loss" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="stats-panel">
+      <h3>État courant — vecteur</h3>
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:10px;">state ∈ {-1, 0, 1}⁹</div>
+      <div class="vec-display" id="live-state">
+        <div class="vec-cell">0</div><div class="vec-cell">0</div><div class="vec-cell">0</div>
+        <div class="vec-cell">0</div><div class="vec-cell">0</div><div class="vec-cell">0</div>
+        <div class="vec-cell">0</div><div class="vec-cell">0</div><div class="vec-cell">0</div>
+      </div>
+      <div class="vec-indices">
+        <div class="vec-idx">i=0</div><div class="vec-idx">i=1</div><div class="vec-idx">i=2</div>
+        <div class="vec-idx">i=3</div><div class="vec-idx">i=4</div><div class="vec-idx">i=5</div>
+        <div class="vec-idx">i=6</div><div class="vec-idx">i=7</div><div class="vec-idx">i=8</div>
+      </div>
+    </div>
+
+    <div class="stats-panel">
+      <h3>Dernier coup — one-hot</h3>
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:10px;">action ∈ {0…8} → vecteur ∈ {0,1}⁹</div>
+      <div class="vec-display" id="live-action">
+        <div class="vec-cell">—</div><div class="vec-cell">—</div><div class="vec-cell">—</div>
+        <div class="vec-cell">—</div><div class="vec-cell">—</div><div class="vec-cell">—</div>
+        <div class="vec-cell">—</div><div class="vec-cell">—</div><div class="vec-cell">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 2 — SIMULATION ═══════════════════ -->
+<div id="tab-sim" class="content">
+  <div class="sim-header">
+    <h2>Simulation Random vs Random</h2>
+  </div>
+
+  <div class="sim-config">
+    <div class="input-group">
+      <label>Nombre de parties</label>
+      <select id="sim-n">
+        <option value="1000">1 000</option>
+        <option value="10000" selected>10 000</option>
+        <option value="50000">50 000</option>
+        <option value="100000">100 000</option>
+        <option value="500000">500 000</option>
+      </select>
+    </div>
+    <div class="input-group" style="margin-top:20px;">
+      <button class="btn btn-primary" id="run-btn" onclick="runSimulation()">▶ Lancer</button>
+    </div>
+  </div>
+
+  <div class="progress-wrap" id="prog-wrap">
+    <div style="font-size:.7rem;color:var(--muted);" id="prog-label">Simulation en cours…</div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+  </div>
+
+  <div class="results-grid" id="sim-results"></div>
+
+  <div class="terminal" id="terminal">
+    <span class="t-yellow">$ </span><span class="t-white">tictactoe_env.py bench</span><br>
+    <span class="t-green">▶ Prêt. Configurez et lancez une simulation.</span><br>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 3 — ENCODINGS ═══════════════════ -->
+<div id="tab-enc" class="content">
+
+  <!-- STATE ENCODING -->
+  <div class="enc-section">
+    <h2>Description de l'état — State Encoding</h2>
+    <div class="subtitle">Vecteur de longueur 9 · Valeurs : {−1, 0, 1} · Référence : Sutton &amp; Barto §3.1</div>
+
+    <div class="enc-grid">
+      <div class="enc-block">
+        <h4>Plateau interactif (cliquez pour modifier)</h4>
+        <div class="enc-board" id="enc-board">
+          <div class="enc-cell" data-i="0" onclick="encCycleCell(0)"> </div>
+          <div class="enc-cell" data-i="1" onclick="encCycleCell(1)"> </div>
+          <div class="enc-cell" data-i="2" onclick="encCycleCell(2)"> </div>
+          <div class="enc-cell" data-i="3" onclick="encCycleCell(3)"> </div>
+          <div class="enc-cell" data-i="4" onclick="encCycleCell(4)"> </div>
+          <div class="enc-cell" data-i="5" onclick="encCycleCell(5)"> </div>
+          <div class="enc-cell" data-i="6" onclick="encCycleCell(6)"> </div>
+          <div class="enc-cell" data-i="7" onclick="encCycleCell(7)"> </div>
+          <div class="enc-cell" data-i="8" onclick="encCycleCell(8)"> </div>
+        </div>
+        <div style="font-size:.68rem;color:var(--muted);">clic : vide → X(+1) → O(−1) → vide</div>
+
+        <h4 style="margin-top:14px;">Vecteur d'état résultant</h4>
+        <div class="vec-display" id="enc-state-vec"></div>
+        <div class="vec-indices">
+          <div class="vec-idx">0</div><div class="vec-idx">1</div><div class="vec-idx">2</div>
+          <div class="vec-idx">3</div><div class="vec-idx">4</div><div class="vec-idx">5</div>
+          <div class="vec-idx">6</div><div class="vec-idx">7</div><div class="vec-idx">8</div>
+        </div>
+      </div>
+
+      <div class="enc-block">
+        <h4>Propriétés</h4>
+        <div class="prop-list">
+          <div class="prop-row"><span class="pk">Taille vecteur</span><span class="pv">9</span></div>
+          <div class="prop-row"><span class="pk">Type numpy</span><span class="pv">float32</span></div>
+          <div class="prop-row"><span class="pk">Valeurs</span><span class="pv">{−1.0, 0.0, 1.0}</span></div>
+          <div class="prop-row"><span class="pk">États théoriques</span><span class="pv">3⁹ = 19 683</span></div>
+          <div class="prop-row"><span class="pk">États légaux</span><span class="pv">≈ 5 478</span></div>
+          <div class="prop-row"><span class="pk">Symétries</span><span class="pv">× 8 (rot. + réfl.)</span></div>
+          <div class="prop-row"><span class="pk">Clé Q-table</span><span class="pv">tuple(state.astype(int))</span></div>
+        </div>
+
+        <h4 style="margin-top:14px;">Convention</h4>
+        <div class="prop-list">
+          <div class="prop-row"><span class="pk" style="color:var(--x-color);">X  (+1)</span><span class="pv">Agent RL</span></div>
+          <div class="prop-row"><span class="pk" style="color:var(--o-color);">O  (−1)</span><span class="pv">Adversaire random</span></div>
+          <div class="prop-row"><span class="pk">·  ( 0)</span><span class="pv">Case vide</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="cc"># Encoding de l'état</span>
+<span class="ck">def</span> get_state(board: np.ndarray) -> np.ndarray:
+    <span class="cs">"""board : tableau (9,) d'int8 → vecteur float32"""</span>
+    <span class="ck">return</span> board.copy().astype(np.float32)
+
+<span class="cc"># Clé pour Q-table (TabularQLearning)</span>
+key = tuple(state.astype(<span class="ck">int</span>))   <span class="cc"># ex: (1, 0, -1, 0, 1, 0, 0, 0, -1)</span>
+
+<span class="cc"># Masque des actions légales (pour réseaux de neurones)</span>
+action_mask = (board == <span class="cn">0</span>).astype(np.float32)
+q_masked = q_values * action_mask - <span class="cn">1e9</span> * (<span class="cn">1</span> - action_mask)</div>
+  </div>
+
+  <!-- ACTION ENCODING -->
+  <div class="enc-section">
+    <h2>Description d'une action — Action Encoding</h2>
+    <div class="subtitle">Entier ∈ {0…8} · One-hot ∈ {0,1}⁹ · Espace discret de taille 9</div>
+
+    <div class="enc-grid">
+      <div class="enc-block">
+        <h4>Sélectionnez une action</h4>
+        <div class="action-grid" id="action-grid">
+          <div class="action-cell" onclick="selectAction(0)">0</div>
+          <div class="action-cell" onclick="selectAction(1)">1</div>
+          <div class="action-cell" onclick="selectAction(2)">2</div>
+          <div class="action-cell" onclick="selectAction(3)">3</div>
+          <div class="action-cell" onclick="selectAction(4)">4</div>
+          <div class="action-cell" onclick="selectAction(5)">5</div>
+          <div class="action-cell" onclick="selectAction(6)">6</div>
+          <div class="action-cell" onclick="selectAction(7)">7</div>
+          <div class="action-cell" onclick="selectAction(8)">8</div>
+        </div>
+
+        <h4 style="margin-top:10px;">Encodage one-hot</h4>
+        <div class="vec-display" id="action-onehot">
+          <div class="vec-cell">—</div><div class="vec-cell">—</div><div class="vec-cell">—</div>
+          <div class="vec-cell">—</div><div class="vec-cell">—</div><div class="vec-cell">—</div>
+          <div class="vec-cell">—</div><div class="vec-cell">—</div><div class="vec-cell">—</div>
+        </div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:4px;" id="action-label">← cliquez sur une case</div>
+      </div>
+
+      <div class="enc-block">
+        <h4>Propriétés</h4>
+        <div class="prop-list">
+          <div class="prop-row"><span class="pk">Espace</span><span class="pv">Discret</span></div>
+          <div class="prop-row"><span class="pk">Taille totale</span><span class="pv">9</span></div>
+          <div class="prop-row"><span class="pk">Encodage entier</span><span class="pv">a ∈ {0, …, 8}</span></div>
+          <div class="prop-row"><span class="pk">Encodage one-hot</span><span class="pv">vecteur ∈ {0,1}⁹</span></div>
+          <div class="prop-row"><span class="pk">Correspondance</span><span class="pv">a = row×3 + col</span></div>
+          <div class="prop-row"><span class="pk">Actions légales</span><span class="pv">cases où state[i] = 0</span></div>
+        </div>
+
+        <h4 style="margin-top:14px;">Recommandations réseau</h4>
+        <div class="prop-list">
+          <div class="prop-row"><span class="pk">Sortie</span><span class="pv">9 logits (DQN)</span></div>
+          <div class="prop-row"><span class="pk">Masque</span><span class="pv">× action_mask avant argmax</span></div>
+          <div class="prop-row"><span class="pk">REINFORCE</span><span class="pv">softmax masquée + log π(a|s)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block"><span class="cc"># Encodage entier (naturel)</span>
+action: <span class="ck">int</span> = <span class="cn">4</span>            <span class="cc"># case centrale</span>
+
+<span class="cc"># Encodage one-hot (réseaux de neurones)</span>
+one_hot = np.zeros(<span class="cn">9</span>, dtype=np.float32)
+one_hot[action] = <span class="cn">1.0</span>     <span class="cc"># [0,0,0,0,1,0,0,0,0]</span>
+
+<span class="cc"># Conversion case (row, col) ↔ index</span>
+action = row * <span class="cn">3</span> + col    <span class="cc"># (1,1) → 4</span>
+row, col = divmod(action, <span class="cn">3</span>) <span class="cc"># 4 → (1,1)</span>
+
+<span class="cc"># Sélection epsilon-greedy (DQN)</span>
+q_masked = q_values + (<span class="cn">-1e9</span>) * (<span class="cn">1</span> - action_mask)
+action = np.argmax(q_masked)</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  ENVIRONNEMENT TICTACTOE (JS — miroir de l'env Python)
+// ══════════════════════════════════════════════════════
+
+const WINNING_LINES = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+function checkWinner(board, player) {
+  return WINNING_LINES.some(l => l.every(i => board[i] === player));
+}
+
+function validActions(board) {
+  return board.map((v,i) => v === 0 ? i : -1).filter(i => i >= 0);
+}
+
+function randomAction(board) {
+  const v = validActions(board);
+  return v[Math.floor(Math.random() * v.length)];
+}
+
+// ══════════════════════════════════════════════════════
+//  TAB SWITCH
+// ══════════════════════════════════════════════════════
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════════════════
+
+let board = new Array(9).fill(0);
+let gameOver = false;
+let gameMode = 'human';   // 'human' | 'auto'
+let stats = { wins: 0, draws: 0, losses: 0 };
+
+function setMode(m) {
+  gameMode = m;
+  document.getElementById('mode-human').classList.toggle('active', m === 'human');
+  document.getElementById('mode-auto').classList.toggle('active', m === 'auto');
+  document.getElementById('auto-btn').style.display = m === 'auto' ? 'inline-block' : 'none';
+  resetGame();
+}
+
+function resetGame() {
+  board = new Array(9).fill(0);
+  gameOver = false;
+  renderBoard();
+  updateLiveState(null);
+  const dot = document.querySelector('#status-bar .dot');
+  dot.className = 'dot green pulse';
+  document.getElementById('status-text').textContent =
+    gameMode === 'human' ? 'Votre tour — vous jouez X' : 'Mode auto — cliquez ▶ Jouer un coup';
+}
+
+function renderBoard() {
+  for (let i = 0; i < 9; i++) {
+    const cell = document.querySelector(`.cell[data-i="${i}"]`);
+    const mark = cell.querySelector('.mark');
+    cell.className = 'cell';
+    if (board[i] === 1) { cell.classList.add('x','taken'); mark.textContent = 'X'; }
+    else if (board[i] === -1) { cell.classList.add('o','taken'); mark.textContent = 'O'; }
+    else { mark.textContent = ''; }
+  }
+}
+
+function setStatus(text, type) {
+  const dot = document.querySelector('#status-bar .dot');
+  dot.className = 'dot ' + (type === 'win' ? 'green' : type === 'loss' ? 'red' : type === 'draw' ? 'blue' : 'yellow');
+  document.getElementById('status-text').textContent = text;
+}
+
+function updateLiveState(lastAction) {
+  const cells = document.querySelectorAll('#live-state .vec-cell');
+  cells.forEach((c, i) => {
+    const v = board[i];
+    c.textContent = v;
+    c.className = 'vec-cell' + (v === 1 ? ' vx' : v === -1 ? ' vo' : '');
+  });
+  const ac = document.querySelectorAll('#live-action .vec-cell');
+  ac.forEach((c, i) => {
+    if (lastAction === null) { c.textContent = '—'; c.className = 'vec-cell'; return; }
+    c.textContent = i === lastAction ? '1' : '0';
+    c.className = 'vec-cell' + (i === lastAction ? ' active' : '');
+  });
+}
+
+function highlightWin(player) {
+  for (const line of WINNING_LINES) {
+    if (line.every(i => board[i] === player)) {
+      line.forEach(i => document.querySelector(`.cell[data-i="${i}"]`).classList.add('win-cell'));
+      return;
+    }
+  }
+}
+
+function updateStats() {
+  const t = stats.wins + stats.draws + stats.losses;
+  document.getElementById('s-total').textContent = t;
+  document.getElementById('s-wins').textContent = stats.wins;
+  document.getElementById('s-losses').textContent = stats.losses;
+  document.getElementById('s-draws').textContent = stats.draws;
+  if (t > 0) {
+    const pw = (stats.wins/t*100).toFixed(1);
+    const pd = (stats.draws/t*100).toFixed(1);
+    const pl = (stats.losses/t*100).toFixed(1);
+    document.getElementById('pct-win').textContent = pw + '%';
+    document.getElementById('pct-draw').textContent = pd + '%';
+    document.getElementById('pct-loss').textContent = pl + '%';
+    document.getElementById('bar-win').style.width = pw + '%';
+    document.getElementById('bar-draw').style.width = pd + '%';
+    document.getElementById('bar-loss').style.width = pl + '%';
+  }
+}
+
+function endGame(result, lastAction) {
+  gameOver = true;
+  if (result === 'win')  { stats.wins++;   highlightWin(1);  setStatus('✓ Victoire de X !', 'win'); }
+  if (result === 'loss') { stats.losses++; highlightWin(-1); setStatus('✗ L\'adversaire O gagne.', 'loss'); }
+  if (result === 'draw') { stats.draws++;  setStatus('= Match nul.', 'draw'); }
+  updateLiveState(lastAction);
+  updateStats();
+}
+
+function humanMove(i) {
+  if (gameMode !== 'human' || gameOver || board[i] !== 0) return;
+  board[i] = 1;
+  renderBoard();
+
+  if (checkWinner(board, 1)) { endGame('win', i); return; }
+  if (validActions(board).length === 0) { endGame('draw', i); return; }
+
+  setStatus('Tour de O (random)…', 'yellow');
+  updateLiveState(i);
+
+  setTimeout(() => {
+    const ai = randomAction(board);
+    board[ai] = -1;
+    renderBoard();
+    if (checkWinner(board, -1)) { endGame('loss', ai); return; }
+    if (validActions(board).length === 0) { endGame('draw', ai); return; }
+    setStatus('Votre tour — vous jouez X', 'green');
+    updateLiveState(ai);
+  }, 350);
+}
+
+function autoPlay() {
+  if (gameOver) { resetGame(); return; }
+  const a1 = randomAction(board);
+  if (a1 === undefined) return;
+  board[a1] = 1;
+  renderBoard();
+  updateLiveState(a1);
+  if (checkWinner(board, 1)) { endGame('win', a1); return; }
+  if (validActions(board).length === 0) { endGame('draw', a1); return; }
+
+  setTimeout(() => {
+    const a2 = randomAction(board);
+    board[a2] = -1;
+    renderBoard();
+    updateLiveState(a2);
+    if (checkWinner(board, -1)) { endGame('loss', a2); return; }
+    if (validActions(board).length === 0) { endGame('draw', a2); return; }
+  }, 200);
+}
+
+// ══════════════════════════════════════════════════════
+//  TAB 2 — SIMULATION
+// ══════════════════════════════════════════════════════
+
+function log(html) {
+  const t = document.getElementById('terminal');
+  t.innerHTML += html + '<br>';
+  t.scrollTop = t.scrollHeight;
+}
+
+function simGame() {
+  let b = new Array(9).fill(0);
+  let steps = 0;
+  while (true) {
+    const v1 = validActions(b);
+    if (!v1.length) return { result: 'draw', steps };
+    const a1 = v1[Math.floor(Math.random() * v1.length)];
+    b[a1] = 1; steps++;
+    if (checkWinner(b, 1)) return { result: 'win', steps };
+    const v2 = validActions(b);
+    if (!v2.length) return { result: 'draw', steps };
+    const a2 = v2[Math.floor(Math.random() * v2.length)];
+    b[a2] = -1; steps++;
+    if (checkWinner(b, -1)) return { result: 'loss', steps };
+  }
+}
+
+async function runSimulation() {
+  const n = parseInt(document.getElementById('sim-n').value);
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  document.getElementById('sim-results').innerHTML = '';
+  document.getElementById('prog-wrap').classList.add('visible');
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-label').textContent = 'Simulation en cours…';
+
+  log(`<span class="t-yellow">$ </span><span class="t-white">simulate(n_games=${n.toLocaleString()})</span>`);
+
+  let wins = 0, draws = 0, losses = 0, totalSteps = 0;
+  const t0 = performance.now();
+
+  const CHUNK = Math.min(5000, n);
+  let done = 0;
+
+  while (done < n) {
+    const batch = Math.min(CHUNK, n - done);
+    for (let i = 0; i < batch; i++) {
+      const r = simGame();
+      totalSteps += r.steps;
+      if (r.result === 'win')  wins++;
+      else if (r.result === 'loss') losses++;
+      else draws++;
+    }
+    done += batch;
+    document.getElementById('prog-fill').style.width = (done / n * 100) + '%';
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  const elapsed = (performance.now() - t0) / 1000;
+  const gps = Math.round(n / elapsed);
+
+  document.getElementById('prog-label').textContent = 'Terminé !';
+
+  log(`<span class="t-green">✓ ${n.toLocaleString()} parties en ${elapsed.toFixed(3)} s</span>`);
+  log(`  Victoires : <span class="t-green">${wins.toLocaleString()}</span> (${(wins/n*100).toFixed(1)}%)`);
+  log(`  Défaites  : <span class="t-red">${losses.toLocaleString()}</span> (${(losses/n*100).toFixed(1)}%)`);
+  log(`  Nuls      : <span class="t-blue">${draws.toLocaleString()}</span> (${(draws/n*100).toFixed(1)}%)`);
+  log(`  <span class="t-yellow">Parties/sec : ${gps.toLocaleString()}</span>`);
+  log(`  Coups moy : ${(totalSteps/n).toFixed(2)}`);
+
+  const res = document.getElementById('sim-results');
+  const cards = [
+    { label:'Parties/seconde', val: gps.toLocaleString(), sub: `en ${elapsed.toFixed(2)} s`, cls:'yellow' },
+    { label:'Taux de victoire', val: (wins/n*100).toFixed(1)+'%', sub: `${wins.toLocaleString()} victoires`, cls:'green' },
+    { label:'Taux de défaite', val: (losses/n*100).toFixed(1)+'%', sub: `${losses.toLocaleString()} défaites`, cls:'red' },
+    { label:'Matchs nuls', val: (draws/n*100).toFixed(1)+'%', sub: `${draws.toLocaleString()} nuls`, cls:'blue' },
+    { label:'Coups / partie', val: (totalSteps/n).toFixed(2), sub: 'moyenne', cls:'yellow' },
+    { label:'Parties simulées', val: n.toLocaleString(), sub: `durée : ${elapsed.toFixed(3)} s`, cls:'yellow' },
+  ];
+
+  res.innerHTML = cards.map(c => `
+    <div class="metric-card">
+      <div class="m-label">${c.label}</div>
+      <div class="m-value ${c.cls}">${c.val}</div>
+      <div class="m-sub">${c.sub}</div>
+    </div>`).join('');
+
+  btn.disabled = false;
+  btn.textContent = '▶ Lancer';
+}
+
+// ══════════════════════════════════════════════════════
+//  TAB 3 — ENCODINGS
+// ══════════════════════════════════════════════════════
+
+let encBoard = new Array(9).fill(0);
+
+function encCycleCell(i) {
+  encBoard[i] = encBoard[i] === 0 ? 1 : encBoard[i] === 1 ? -1 : 0;
+  renderEncBoard();
+}
+
+function renderEncBoard() {
+  const sym = { 1:'X', '-1':'O', 0:' ' };
+  const cls = { 1:'ex', '-1':'eo', 0:'' };
+  for (let i = 0; i < 9; i++) {
+    const c = document.querySelector(`#enc-board .enc-cell[data-i="${i}"]`);
+    const v = encBoard[i];
+    c.textContent = sym[v] || ' ';
+    c.className = 'enc-cell ' + (cls[v] || '');
+  }
+  // Update state vector
+  const cells = document.querySelectorAll('#enc-state-vec .vec-cell');
+  cells.forEach((c, i) => {
+    const v = encBoard[i];
+    c.textContent = v;
+    c.className = 'vec-cell' + (v === 1 ? ' vx' : v === -1 ? ' vo' : '');
+  });
+}
+
+function selectAction(a) {
+  document.querySelectorAll('#action-grid .action-cell').forEach((c,i) => {
+    c.classList.toggle('selected', i === a);
+  });
+  const oh = document.querySelectorAll('#action-onehot .vec-cell');
+  oh.forEach((c,i) => {
+    c.textContent = i === a ? '1' : '0';
+    c.className = 'vec-cell' + (i === a ? ' active' : '');
+  });
+  const row = Math.floor(a/3), col = a%3;
+  document.getElementById('action-label').textContent =
+    `action ${a}  →  case (row=${row}, col=${col})  →  one-hot[${a}]=1`;
+}
+
+// ── Init ──
+(function() {
+  // Init enc-state-vec cells
+  const sv = document.getElementById('enc-state-vec');
+  sv.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const d = document.createElement('div');
+    d.className = 'vec-cell'; d.textContent = '0';
+    sv.appendChild(d);
+  }
+  renderEncBoard();
+})();
+</script>
+</body>
+</html>
