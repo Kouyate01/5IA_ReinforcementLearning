@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List, Tuple, Optional, Dict
 import copy
-from base_env import BaseEnv
+from envs.base_env import BaseEnv
 
 
 class Bobail(BaseEnv):
@@ -14,7 +14,7 @@ class Bobail(BaseEnv):
     Plateau : grille 5x5
     Pièces :
         - 1 Bobail (pièce neutre, partagée)
-        - 5 pions Joueur 0 (rangée du bas, ligne 4)
+        - 5 pions Joueu 0 (rangée du bas, ligne 4)
         - 5 pions Joueur 1 (rangée du haut, ligne 0)
 
     Disposition initiale :

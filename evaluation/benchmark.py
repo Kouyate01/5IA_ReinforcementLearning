@@ -89,8 +89,9 @@ if __name__ == "__main__":
     from envs.bobail import Bobail
 
     N = 10_000
+    #N = 10
 
-    benchmark(LineWorld(size=7), n_games=N)
-    benchmark(GridWorld(rows=4, cols=4), n_games=N)
+    benchmark(LineWorld(size=5), n_games=N)
+    benchmark(GridWorld(rows=5, cols=5), n_games=N)
     benchmark(TicTacToe(), n_games=N)
     benchmark(Bobail(), n_games=N)

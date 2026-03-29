@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List, Tuple
 import copy
-from base_env import BaseEnv
+from envs.base_env import BaseEnv
 
 
 class LineWorld(BaseEnv):
