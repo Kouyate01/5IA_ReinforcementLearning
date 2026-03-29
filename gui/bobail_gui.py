@@ -112,14 +112,14 @@ class BobailCanvas(tk.Canvas):
                                       fill=fill, outline=GRID_COL, width=1, tags="grid")
         # rangées d'arrivée colorées
         for c in range(5):
-            # ligne 0 = zone victoire J0
+            # ligne 0 = zone victoire J1
             x0, y0 = PADDING + c * CELL, PADDING
             self.create_rectangle(x0, y0, x0 + CELL, y0 + CELL,
-                                  fill="#1a1228", outline=GRID_COL, width=1, tags="grid")
-            # ligne 4 = zone victoire J1
+                                  fill="#0e1a28", outline=GRID_COL, width=1, tags="grid")
+            # ligne 4 = zone victoire J0
             x0, y0 = PADDING + c * CELL, PADDING + 4 * CELL
             self.create_rectangle(x0, y0, x0 + CELL, y0 + CELL,
-                                  fill="#0e1a28", outline=GRID_COL, width=1, tags="grid")
+                                  fill="#1f1010", outline=GRID_COL, width=1, tags="grid")
         # étiquettes lignes/colonnes
         for i in range(5):
             x = PADDING + i * CELL + CELL // 2
@@ -357,8 +357,8 @@ class GameTab(tk.Frame):
         # Légende
         leg = tk.Frame(left, bg=BG)
         leg.pack(pady=(6, 0))
-        for sym, col, lbl in [("X", X_COL, "Joueur 0 → ligne 0"),
-                               ("O", O_COL, "Joueur 1 → ligne 4"),
+        for sym, col, lbl in [("X", X_COL, "Joueur 0 → ligne 4"),
+                               ("O", O_COL, "Joueur 1 → ligne 0"),
                                ("B", B_COL, "Bobail")]:
             tk.Label(leg, text=f"{sym} ", bg=BG, fg=col,
                      font=("Segoe UI", 10, "bold")).pack(side="left")

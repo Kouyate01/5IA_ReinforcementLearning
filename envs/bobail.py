@@ -30,9 +30,9 @@ class Bobail(BaseEnv):
         PHASE 2 → Déplacer un de ses propres pions (1 case dans 8 directions)
 
     Conditions de victoire :
-        - Un joueur gagne s'il amène le Bobail sur sa rangée d'arrivée :
-            Joueur 0 → amener le Bobail en ligne 0
-            Joueur 1 → amener le Bobail en ligne 4
+        - Un joueur gagne s'il amène le Bobail sur sa propre ligne de départ :
+            Joueur 0 → amener le Bobail en ligne 4
+            Joueur 1 → amener le Bobail en ligne 0
         - Un joueur gagne aussi si l'adversaire n'a plus de mouvements légaux.
         - Si un joueur ne peut pas déplacer le Bobail vers une case légale,
           il passe directement à la phase 2 (déplacement de pion).
@@ -80,7 +80,7 @@ class Bobail(BaseEnv):
                    (1, 0),  (1, -1), (0, -1), (-1, -1)]
 
     # Lignes d'arrivée
-    _WIN_ROW = {0: 0, 1: 4}  # joueur 0 veut amener le Bobail en ligne 0, joueur 1 en ligne 4
+    _WIN_ROW = {0: 4, 1: 0}  # joueur 0 veut amener le Bobail en ligne 4 (son camp), joueur 1 en ligne 0
 
     def __init__(self):
         # Plateau : 0=vide, 1=pion joueur 0, 2=pion joueur 1, 3=Bobail
@@ -143,11 +143,16 @@ class Bobail(BaseEnv):
             self._bobail_pos = (new_br, new_bc)
 
             # Vérifier victoire par position du Bobail
-            win_row = self._WIN_ROW[self._current_player]
-            if new_br == win_row:
+            # Si le Bobail atterrit sur la ligne d'un joueur, ce joueur gagne, peu importe qui l'a poussé.
+            if new_br == 4:
                 self._done = True
-                self._winner = self._current_player
-                reward = 1.0
+                self._winner = 0
+                reward = 1.0 if self._current_player == 0 else -1.0
+                return self.get_state(), reward, self._done
+            elif new_br == 0:
+                self._done = True
+                self._winner = 1
+                reward = 1.0 if self._current_player == 1 else -1.0
                 return self.get_state(), reward, self._done
 
             # Passer à la phase 2
