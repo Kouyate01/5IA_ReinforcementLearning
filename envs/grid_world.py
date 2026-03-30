@@ -9,9 +9,10 @@ class GridWorld(BaseEnv):
     Environnement GridWorld (2D) — grille 5x5.
 
     Le joueur démarre en haut à gauche (0, 0).
-    L'objectif est d'atteindre la case en bas à droite (4, 4).
+    L'objectif est d'atteindre la case en bas à droite (4, 4) et de ne surtout pas aller sur la case (0,4).
     Les bords bloquent le déplacement (le joueur reste en place).
     Chaque pas intermédiaire coûte -0.01.
+    Atteindre case (4,4) donne +1 et case (0,4) donne -3
 
     State encoding:
         Vecteur one-hot de taille rows*cols.
@@ -51,8 +52,13 @@ class GridWorld(BaseEnv):
         if 0 <= new_row < self._rows and 0 <= new_col < self._cols:
             self._row = new_row
             self._col = new_col
+        
+        # Case perdante : haut à droite
+        if self._row == 0 and self._col == self._cols - 1:
+            self._last_reward = -3.0
+            self._done = True
 
-        # Objectif atteint
+        # Objectif atteint: bas à droite
         if self._row == self._rows - 1 and self._col == self._cols - 1:
             self._last_reward = 1.0
             self._done = True
@@ -86,6 +92,8 @@ class GridWorld(BaseEnv):
                     cell = " X "
                 elif (r, c) == (self._rows - 1, self._cols - 1):
                     cell = " G "
+                elif (r,c) == (0, self._cols - 1):
+                    cell = " L " #L=Loss
                 else:
                     cell = "   "
                 row_str += cell + "|"
