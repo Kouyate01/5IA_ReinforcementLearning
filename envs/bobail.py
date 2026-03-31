@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional
 import copy
 from envs.base_env import BaseEnv
 
@@ -14,7 +14,7 @@ class Bobail(BaseEnv):
     Plateau : grille 5x5
     Pièces :
         - 1 Bobail (pièce neutre, partagée)
-        - 5 pions Joueu 0 (rangée du bas, ligne 4)
+        - 5 pions Joueur 0 (rangée du bas, ligne 4)
         - 5 pions Joueur 1 (rangée du haut, ligne 0)
 
     Disposition initiale :
@@ -26,92 +26,82 @@ class Bobail(BaseEnv):
 
     Tour de jeu :
         Chaque tour se déroule en 2 phases :
-        PHASE 1 → Déplacer le Bobail (1 case dans 8 directions)
-        PHASE 2 → Déplacer un de ses propres pions (1 case dans 8 directions)
+        PHASE 1 → Déplacer le Bobail (1 case dans 8 directions, case vide uniquement)
+                  Si le Bobail ne peut PAS être déplacé → défaite immédiate du joueur courant
+        PHASE 2 → Déplacer un de ses propres pions :
+                  Le pion glisse jusqu'à la case la plus éloignée possible dans
+                  une direction (comme une tour aux échecs), sans sauter par-dessus
+                  d'autres pions ni par-dessus le Bobail.
 
     Conditions de victoire :
-        - Un joueur gagne s'il amène le Bobail sur sa propre ligne de départ :
-            Joueur 0 → amener le Bobail en ligne 4
-            Joueur 1 → amener le Bobail en ligne 0
-        - Un joueur gagne aussi si l'adversaire n'a plus de mouvements légaux.
-        - Si un joueur ne peut pas déplacer le Bobail vers une case légale,
-          il passe directement à la phase 2 (déplacement de pion).
-
-    Mouvement :
-        Les pions et le Bobail se déplacent d'une seule case dans les 8 directions.
-        Un pion ne peut pas aller sur une case déjà occupée.
-        Le Bobail ne peut pas aller sur une case occupée par un pion.
+        - Amener le Bobail sur sa propre ligne de base :
+            Joueur 0 → ligne 4  |  Joueur 1 → ligne 0
+        - Enfermer le Bobail (aucun mouvement possible pour le Bobail au début
+          du tour adverse) → le joueur qui vient de jouer gagne.
+        - Si le Bobail ne peut pas être déplacé en début de tour → défaite
+          immédiate du joueur courant.
 
     ═══════════════════════════════════════════════════════════════
     ENCODING DE L'ÉTAT (taille = 77)
     ═══════════════════════════════════════════════════════════════
-    Le plateau est représenté par 3 couches de 25 cases (5x5) aplaties :
-        - Couche 0 (indices 0-24)  : 1.0 si case contient un pion Joueur 0
+        - Couche 0 (indices  0-24) : 1.0 si case contient un pion Joueur 0
         - Couche 1 (indices 25-49) : 1.0 si case contient un pion Joueur 1
         - Couche 2 (indices 50-74) : 1.0 si case contient le Bobail
-    + 2 valeurs scalaires :
         - Indice 75 : joueur courant (0.0 ou 1.0)
-        - Indice 76 : phase courante (0.0=déplacer Bobail, 1.0=déplacer pion)
+        - Indice 76 : phase courante (0.0 = déplacer Bobail, 1.0 = déplacer pion)
     → Taille totale : 77
 
     ═══════════════════════════════════════════════════════════════
     ENCODING DES ACTIONS
     ═══════════════════════════════════════════════════════════════
-    Phase 1 (déplacer Bobail) : 8 directions depuis la position du Bobail
-        Actions 0-7 : directions [N, NE, E, SE, S, SO, O, NO]
+    Phase 1 — déplacer le Bobail (8 actions) :
+        action = direction    avec direction ∈ [0, 7]
+        Directions : 0=N, 1=NE, 2=E, 3=SE, 4=S, 5=SO, 6=O, 7=NO
 
-    Phase 2 (déplacer un pion) : 5 pions × 8 directions = 40 actions
-        Action = pion_index * 8 + direction_index
-        Actions 8-47
+    Phase 2 — déplacer un pion (200 actions) :
+        action = 8 + (row * 5 + col) * 8 + direction
+        → 25 cases × 8 directions = 200 actions possibles
 
-    → Taille totale de l'espace d'actions : 48
-    (Beaucoup d'actions seront illégales selon l'état — utiliser available_actions())
+        Décodage :
+            encoded   = action - 8
+            case_idx  = encoded // 8     → index de la case de départ (row*5+col)
+            direction = encoded  % 8     → direction du glissement
+            row       = case_idx // 5
+            col       = case_idx  % 5
+
+    → Taille totale de l'espace d'actions : 208
+    → L'agent fait le lien état ↔ action car les deux utilisent row*5+col.
 
     ═══════════════════════════════════════════════════════════════
     RÉCOMPENSES
     ═══════════════════════════════════════════════════════════════
-        +1.0 → victoire (Bobail sur la rangée d'arrivée, ou adversaire bloqué)
+        +1.0 → victoire
         -1.0 → défaite
          0.0 → coup intermédiaire
     """
 
-    # 8 directions : N, NE, E, SE, S, SO, O, NO
     _DIRECTIONS = [(-1, 0), (-1, 1), (0, 1), (1, 1),
                    (1, 0),  (1, -1), (0, -1), (-1, -1)]
 
-    # Lignes d'arrivée
-    _WIN_ROW = {0: 4, 1: 0}  # joueur 0 veut amener le Bobail en ligne 4 (son camp), joueur 1 en ligne 0
+    _WIN_ROW = {0: 4, 1: 0}
 
     def __init__(self):
-        # Plateau : 0=vide, 1=pion joueur 0, 2=pion joueur 1, 3=Bobail
         self._board = np.zeros((5, 5), dtype=np.int8)
         self._bobail_pos: Tuple[int, int] = (2, 2)
         self._current_player: int = 0
-        self._phase: int = 0  # 0=déplacer Bobail, 1=déplacer pion
+        self._phase: int = 0
         self._done: bool = False
         self._winner: Optional[int] = None
         self._reset_board()
 
-    # -------------------------------------------------------------------------
-    # Initialisation
-    # -------------------------------------------------------------------------
-
     def _reset_board(self) -> None:
-        """Met le plateau dans l'état initial."""
         self._board = np.zeros((5, 5), dtype=np.int8)
-        # Pions joueur 0 en bas (ligne 4)
         for col in range(5):
             self._board[4][col] = 1
-        # Pions joueur 1 en haut (ligne 0)
         for col in range(5):
             self._board[0][col] = 2
-        # Bobail au centre
         self._board[2][2] = 3
         self._bobail_pos = (2, 2)
-
-    # -------------------------------------------------------------------------
-    # Méthodes abstraites obligatoires
-    # -------------------------------------------------------------------------
 
     def reset(self) -> np.ndarray:
         self._reset_board()
@@ -131,69 +121,61 @@ class Bobail(BaseEnv):
         reward = 0.0
 
         if self._phase == 0:
-            # ── Phase 1 : déplacer le Bobail ──────────────────────────────
-            direction = action  # 0-7
+            direction = action
             br, bc = self._bobail_pos
             dr, dc = self._DIRECTIONS[direction]
             new_br, new_bc = br + dr, bc + dc
 
-            # Déplacer le Bobail
             self._board[br][bc] = 0
             self._board[new_br][new_bc] = 3
             self._bobail_pos = (new_br, new_bc)
 
-            # Vérifier victoire par position du Bobail
-            # Si le Bobail atterrit sur la ligne d'un joueur, ce joueur gagne, peu importe qui l'a poussé.
-            if new_br == 4:
-                self._done = True
-                self._winner = 0
-                reward = 1.0 if self._current_player == 0 else -1.0
-                return self.get_state(), reward, self._done
-            elif new_br == 0:
-                self._done = True
-                self._winner = 1
-                reward = 1.0 if self._current_player == 1 else -1.0
-                return self.get_state(), reward, self._done
-
-            # Passer à la phase 2
-            self._phase = 1
-
-            # Si le joueur n'a aucun pion déplaçable en phase 2, on passe
-            if len(self._get_phase2_actions()) == 0:
-                self._end_turn()
-
-        else:
-            # ── Phase 2 : déplacer un pion ────────────────────────────────
-            # action = 8 + pion_index * 8 + direction_index
-            encoded = action - 8
-            pion_idx = encoded // 8
-            direction = encoded % 8 #(reste de la division par 8)
-
-            pions = self._get_player_pions(self._current_player)
-            pr, pc = pions[pion_idx]
-            dr, dc = self._DIRECTIONS[direction]
-            new_pr, new_pc = pr + dr, pc + dc
-
-            # Déplacer le pion
-            piece_val = self._board[pr][pc]
-            self._board[pr][pc] = 0
-            self._board[new_pr][new_pc] = piece_val
-
-            # Fin du tour
-            self._end_turn()
-
-            # Vérifier si l'adversaire est bloqué
-            if not self._done and len(self.available_actions()) == 0:
+            # Victoire : Bobail sur la ligne de base du joueur courant
+            if new_br == self._WIN_ROW[self._current_player]:
                 self._done = True
                 self._winner = self._current_player
-                reward = 1.0
+                return self.get_state(), 1.0, self._done
+
+            # Bobail sur la ligne de base adverse → l'adversaire gagne
+            opponent = 1 - self._current_player
+            if new_br == self._WIN_ROW[opponent]:
+                self._done = True
+                self._winner = opponent
+                return self.get_state(), -1.0, self._done
+
+            self._phase = 1
+
+            if len(self._get_phase2_actions()) == 0:
+                self._end_turn()
+                self._check_bobail_blocked_defeat()
+
+        else:
+            encoded   = action - 8
+            case_idx  = encoded // 8
+            direction = encoded % 8
+
+            from_row = case_idx // 5
+            from_col = case_idx % 5
+
+            to_row, to_col = self._slide_destination(from_row, from_col, direction)
+
+            piece_val = self._board[from_row][from_col]
+            self._board[from_row][from_col] = 0
+            self._board[to_row][to_col] = piece_val
+
+            self._end_turn()
+            self._check_bobail_blocked_defeat()
+
+            # Bobail enfermé → le joueur qui vient de jouer gagne
+            if not self._done and len(self._get_phase1_actions()) == 0:
+                self._done = True
+                self._winner = 1 - self._current_player
 
         return self.get_state(), reward, self._done
 
     def available_actions(self) -> List[int]:
         if self._done:
             return []
-
         if self._phase == 0:
             return self._get_phase1_actions()
         else:
@@ -208,11 +190,11 @@ class Bobail(BaseEnv):
             for c in range(5):
                 idx = r * 5 + c
                 cell = self._board[r][c]
-                if cell == 1:      # pion joueur 0
+                if cell == 1:
                     state[idx] = 1.0
-                elif cell == 2:    # pion joueur 1
+                elif cell == 2:
                     state[25 + idx] = 1.0
-                elif cell == 3:    # Bobail
+                elif cell == 3:
                     state[50 + idx] = 1.0
         state[75] = float(self._current_player)
         state[76] = float(self._phase)
@@ -224,7 +206,7 @@ class Bobail(BaseEnv):
     def render(self) -> None:
         symbols = {0: ".", 1: "X", 2: "O", 3: "B"}
         player_names = {0: "Joueur 0 (X)", 1: "Joueur 1 (O)"}
-        phase_names = {0: "déplacer Bobail", 1: "déplacer un pion"}
+        phase_names  = {0: "déplacer Bobail", 1: "déplacer un pion"}
 
         print("\n  0 1 2 3 4")
         print(" +----------")
@@ -233,14 +215,15 @@ class Bobail(BaseEnv):
             for c in range(5):
                 row_str += symbols[self._board[r][c]] + " "
             print(row_str)
-        
+
         if self._done:
             if self._winner is not None:
                 print(f"\n→ {player_names[self._winner]} gagne !")
             else:
                 print("\n→ Match nul !")
         else:
-            print(f"\n→ {player_names[self._current_player]} | Phase: {phase_names[self._phase]}")
+            print(f"\n→ {player_names[self._current_player]} "
+                  f"| Phase : {phase_names[self._phase]}")
             print(f"  Bobail en {self._bobail_pos}")
         print()
 
@@ -250,80 +233,90 @@ class Bobail(BaseEnv):
 
     @property
     def action_size(self) -> int:
-        return 48  # 8 (phase1) + 5*8 (phase2)
+        return 208  # 8 (phase1) + 25*8 (phase2)
 
     @property
     def current_player(self) -> int:
         return self._current_player
 
     def score(self) -> float:
-        """Score pour le joueur 0."""
         if self._winner == 0:
             return 1.0
         elif self._winner == 1:
             return 0.0
-        return 0.5  # match nul (ne devrait pas arriver à Bobail)
-
-    # -------------------------------------------------------------------------
-    # Méthodes privées
-    # -------------------------------------------------------------------------
+        return 0.5
 
     def _end_turn(self) -> None:
-        """Change de joueur et remet la phase à 0."""
         self._current_player = 1 - self._current_player
         self._phase = 0
 
-    def _get_player_pions(self, player: int) -> List[Tuple[int, int]]:
-        """Retourne la liste des positions des pions d'un joueur, triée."""
-        val = player + 1  # 1 pour joueur 0, 2 pour joueur 1
-        positions = []
-        for r in range(5):
-            for c in range(5):
-                if self._board[r][c] == val:
-                    positions.append((r, c))
-        return positions
+    def _check_bobail_blocked_defeat(self) -> None:
+        """
+        Si le joueur courant ne peut pas déplacer le Bobail,
+        il perd immédiatement.
+        """
+        if not self._done and self._phase == 0:
+            if len(self._get_phase1_actions()) == 0:
+                self._done = True
+                self._winner = 1 - self._current_player
+
+    def _slide_destination(self, from_row: int, from_col: int, direction: int) -> Tuple[int, int]:
+        """
+        Le pion glisse dans la direction jusqu'à la case la plus éloignée
+        possible, sans sauter par-dessus d'autres pièces ni le Bobail.
+        S'arrête sur la dernière case vide avant un obstacle ou un bord.
+        """
+        dr, dc = self._DIRECTIONS[direction]
+        cur_r, cur_c = from_row, from_col
+
+        while True:
+            next_r = cur_r + dr
+            next_c = cur_c + dc
+            if not (0 <= next_r < 5 and 0 <= next_c < 5):
+                break
+            if self._board[next_r][next_c] != 0:
+                break
+            cur_r, cur_c = next_r, next_c
+
+        return cur_r, cur_c
 
     def _get_phase1_actions(self) -> List[int]:
-        """Actions légales pour la phase 1 (déplacer le Bobail)."""
         actions = []
         br, bc = self._bobail_pos
         for d, (dr, dc) in enumerate(self._DIRECTIONS):
             nr, nc = br + dr, bc + dc
-            if self._is_valid_bobail_move(nr, nc):
+            if 0 <= nr < 5 and 0 <= nc < 5 and self._board[nr][nc] == 0:
                 actions.append(d)
         return actions
 
     def _get_phase2_actions(self) -> List[int]:
-        """Actions légales pour la phase 2 (déplacer un pion du joueur courant)."""
+        """
+        action = 8 + (row * 5 + col) * 8 + direction
+        Un pion peut glisser si la case adjacente dans cette direction est libre.
+        """
         actions = []
-        pions = self._get_player_pions(self._current_player)
-        for pion_idx, (pr, pc) in enumerate(pions):
+        for (pr, pc) in self._get_player_pions(self._current_player):
+            case_idx = pr * 5 + pc
             for d, (dr, dc) in enumerate(self._DIRECTIONS):
                 nr, nc = pr + dr, pc + dc
-                if self._is_valid_pion_move(nr, nc):
-                    actions.append(8 + pion_idx * 8 + d)
+                if 0 <= nr < 5 and 0 <= nc < 5 and self._board[nr][nc] == 0:
+                    actions.append(8 + case_idx * 8 + d)
         return actions
 
-    def _is_valid_bobail_move(self, r: int, c: int) -> bool:
-        """Vérifie si le Bobail peut aller en (r, c)."""
-        if not (0 <= r < 5 and 0 <= c < 5):
-            return False
-        return self._board[r][c] == 0  # doit être vide
-
-    def _is_valid_pion_move(self, r: int, c: int) -> bool:
-        """Vérifie si un pion peut aller en (r, c)."""
-        if not (0 <= r < 5 and 0 <= c < 5):
-            return False
-        return self._board[r][c] == 0  # doit être vide (pas de capture)
+    def _get_player_pions(self, player: int) -> List[Tuple[int, int]]:
+        val = player + 1
+        return [
+            (r, c)
+            for r in range(5)
+            for c in range(5)
+            if self._board[r][c] == val
+        ]
 
     def get_bobail_position(self) -> Tuple[int, int]:
-        """Retourne la position actuelle du Bobail."""
         return self._bobail_pos
 
     def get_board(self) -> np.ndarray:
-        """Retourne une copie du plateau (pour la GUI)."""
         return self._board.copy()
 
     def get_phase(self) -> int:
-        """Retourne la phase courante (0 ou 1)."""
         return self._phase
