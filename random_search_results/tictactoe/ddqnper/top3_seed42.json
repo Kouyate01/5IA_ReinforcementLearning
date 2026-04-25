@@ -1,0 +1,59 @@
+[
+  {
+    "run": 4,
+    "score": 0.73,
+    "duration_s": 1179.3,
+    "gamma": 0.99,
+    "batch_size": 128,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 50000,
+    "hidden_sizes": [
+      128,
+      128
+    ],
+    "target_update_freq": 1000,
+    "lr": 0.000796,
+    "alpha": 0.485399,
+    "beta_start": 0.670706
+  },
+  {
+    "run": 5,
+    "score": 0.7,
+    "duration_s": 1133.9,
+    "gamma": 0.99,
+    "batch_size": 128,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 50000,
+    "hidden_sizes": [
+      128,
+      128
+    ],
+    "target_update_freq": 1000,
+    "lr": 0.00194,
+    "alpha": 0.711381,
+    "beta_start": 0.477366
+  },
+  {
+    "run": 3,
+    "score": 0.675,
+    "duration_s": 1198.5,
+    "gamma": 0.99,
+    "batch_size": 128,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 50000,
+    "hidden_sizes": [
+      128,
+      128
+    ],
+    "target_update_freq": 1000,
+    "lr": 0.003329,
+    "alpha": 0.693032,
+    "beta_start": 0.351245
+  }
+]

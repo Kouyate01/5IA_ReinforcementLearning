@@ -59,7 +59,7 @@ class Bobail(BaseEnv):
         Directions : 0=N, 1=NE, 2=E, 3=SE, 4=S, 5=SO, 6=O, 7=NO
 
     Phase 2 — déplacer un pion (200 actions) :
-        action = 8 + (row * 5 + col) * 8 + direction
+        action = 8 + (row * 5 + col) * 8 
         → 25 cases × 8 directions = 200 actions possibles
 
         Décodage :

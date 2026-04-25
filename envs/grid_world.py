@@ -32,40 +32,45 @@ class GridWorld(BaseEnv):
         self._col = 0
         self._done = False
         self._last_reward = 0.0
+        self._cumulative_reward = 0.0
 
     def reset(self) -> np.ndarray:
         self._row = 0
         self._col = 0
         self._done = False
         self._last_reward = 0.0
+        self._cumulative_reward = 0.0
         return self.get_state()
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool]:
         assert not self._done, "Partie terminée, appelez reset()."
         assert action in self.ACTIONS, f"Action invalide : {action}"
-
+ 
         dr, dc = self._MOVES[action]
         new_row = self._row + dr
         new_col = self._col + dc
-
+ 
         # Si le déplacement sort de la grille, on reste en place
         if 0 <= new_row < self._rows and 0 <= new_col < self._cols:
             self._row = new_row
             self._col = new_col
-        
-        # Case perdante : haut à droite
+ 
+        # ── Récompenses (if/elif/else : cas mutuellement exclusifs) ──────────
         if self._row == 0 and self._col == self._cols - 1:
+            # Case perdante : haut à droite (0, 4)
             self._last_reward = -3.0
             self._done = True
-
-        # Objectif atteint: bas à droite
-        if self._row == self._rows - 1 and self._col == self._cols - 1:
+        elif self._row == self._rows - 1 and self._col == self._cols - 1:
+            # Objectif atteint : bas à droite (4, 4)
             self._last_reward = 1.0
             self._done = True
         else:
+            # Pas intermédiaire
             self._last_reward = -0.01
-
+ 
+        self._cumulative_reward += self._last_reward
         return self.get_state(), self._last_reward, self._done
+
 
     def available_actions(self) -> List[int]:
         if self._done:
@@ -116,4 +121,4 @@ class GridWorld(BaseEnv):
         return 1
 
     def score(self) -> float:
-        return self._last_reward
+        return self._cumulative_reward

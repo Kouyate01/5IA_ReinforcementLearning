@@ -1,0 +1,53 @@
+[
+  {
+    "run": 9,
+    "score": 0.925,
+    "duration_s": 33.0,
+    "gamma": 0.99,
+    "batch_size": 128,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 43229,
+    "hidden_sizes": [
+      128,
+      128
+    ],
+    "target_update_freq": 1000,
+    "lr": 0.00194
+  },
+  {
+    "run": 3,
+    "score": 0.9,
+    "duration_s": 31.0,
+    "gamma": 0.99,
+    "batch_size": 128,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 24139,
+    "hidden_sizes": [
+      128,
+      128
+    ],
+    "target_update_freq": 1000,
+    "lr": 0.002482
+  },
+  {
+    "run": 6,
+    "score": 0.865,
+    "duration_s": 36.1,
+    "gamma": 0.99,
+    "batch_size": 128,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 79676,
+    "hidden_sizes": [
+      128,
+      128
+    ],
+    "target_update_freq": 1000,
+    "lr": 0.00018
+  }
+]

@@ -1,0 +1,302 @@
+[
+  {
+    "run": 0,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.0012520653814999472,
+      "epsilon_decay": 0.9964367042973518
+    },
+    "score": 1.0,
+    "length": 9.0,
+    "action_ms": 0.03696793007353942,
+    "train_s": 44.5
+  },
+  {
+    "run": 3,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.001263559813738167,
+      "epsilon_decay": 0.9963733304035629
+    },
+    "score": 1.0,
+    "length": 9.0,
+    "action_ms": 0.036451720438587173,
+    "train_s": 44.0
+  },
+  {
+    "run": 5,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.00027796258518939394,
+      "epsilon_decay": 0.9978365907555964
+    },
+    "score": 1.0,
+    "length": 9.0,
+    "action_ms": 0.03654295347061836,
+    "train_s": 44.1
+  },
+  {
+    "run": 6,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.006105486887627994,
+      "epsilon_decay": 0.9929878182477105
+    },
+    "score": 1.0,
+    "length": 7.0,
+    "action_ms": 0.03838920006195882,
+    "train_s": 39.2
+  },
+  {
+    "run": 7,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.00014210736239935758,
+      "epsilon_decay": 0.997019269130161
+    },
+    "score": 1.0,
+    "length": 9.0,
+    "action_ms": 0.03656131368026965,
+    "train_s": 46.0
+  },
+  {
+    "run": 8,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.0055828865879781996,
+      "epsilon_decay": 0.9987168659653883
+    },
+    "score": 1.0,
+    "length": 7.0,
+    "action_ms": 0.03660310700070113,
+    "train_s": 39.8
+  },
+  {
+    "run": 9,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.00010489343501429875,
+      "epsilon_decay": 0.9945168713293386
+    },
+    "score": 1.0,
+    "length": 9.0,
+    "action_ms": 0.0362603114788524,
+    "train_s": 44.2
+  },
+  {
+    "run": 12,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.00020338816813650012,
+      "epsilon_decay": 0.9966604472686387
+    },
+    "score": 1.0,
+    "length": 9.0,
+    "action_ms": 0.03646653229629414,
+    "train_s": 43.1
+  },
+  {
+    "run": 1,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.0006824078427098838,
+      "epsilon_decay": 0.9964829204409794
+    },
+    "score": 0.5,
+    "length": 9.0,
+    "action_ms": 0.03733529023722642,
+    "train_s": 40.1
+  },
+  {
+    "run": 10,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.0034885205571560775,
+      "epsilon_decay": 0.9901867675442346
+    },
+    "score": 0.5,
+    "length": 9.0,
+    "action_ms": 0.03632444724078394,
+    "train_s": 43.8
+  },
+  {
+    "run": 13,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.0035925665437053695,
+      "epsilon_decay": 0.9921378709803143
+    },
+    "score": 0.5,
+    "length": 9.0,
+    "action_ms": 0.03657631640736427,
+    "train_s": 44.4
+  },
+  {
+    "run": 2,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.0007447144904083078,
+      "epsilon_decay": 0.990233336086451
+    },
+    "score": 0.0,
+    "length": 8.0,
+    "action_ms": 0.03707110745017417,
+    "train_s": 40.4
+  },
+  {
+    "run": 4,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.008591315698733486,
+      "epsilon_decay": 0.9949250902425815
+    },
+    "score": 0.0,
+    "length": 8.0,
+    "action_ms": 0.036852376055321656,
+    "train_s": 38.0
+  },
+  {
+    "run": 11,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.00022937145935627006,
+      "epsilon_decay": 0.9901752771733886
+    },
+    "score": 0.0,
+    "length": 8.0,
+    "action_ms": 0.036408700616448186,
+    "train_s": 39.2
+  },
+  {
+    "run": 14,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "lr": 0.001066317870263958,
+      "epsilon_decay": 0.9969584854687137
+    },
+    "score": 0.0,
+    "length": 8.0,
+    "action_ms": 0.03657621759339236,
+    "train_s": 44.5
+  }
+]

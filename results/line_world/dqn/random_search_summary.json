@@ -1,0 +1,317 @@
+[
+  {
+    "run": 4,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.00083333773185858,
+      "epsilon_decay": 0.9951257208411991
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.3037194026595291,
+    "mean_action_time_ms": 0.0375426413763004
+  },
+  {
+    "run": 5,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.0001314460889711278,
+      "epsilon_decay": 0.9910909562779082
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.3494689999885547,
+    "mean_action_time_ms": 0.036172461657164
+  },
+  {
+    "run": 7,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.0006717247479368657,
+      "epsilon_decay": 0.9960015146604303
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.357510778005235,
+    "mean_action_time_ms": 0.038060964356797435
+  },
+  {
+    "run": 3,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.00033940178273595176,
+      "epsilon_decay": 0.9913435479964345
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.3816212083329447,
+    "mean_action_time_ms": 0.036118975918119155
+  },
+  {
+    "run": 6,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.0005466207074750151,
+      "epsilon_decay": 0.9911878054006729
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.38444249999399,
+    "mean_action_time_ms": 0.03614393004681915
+  },
+  {
+    "run": 8,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.00028480886134613596,
+      "epsilon_decay": 0.9930909292655463
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.3876199026514466,
+    "mean_action_time_ms": 0.03687650324233497
+  },
+  {
+    "run": 2,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.0007523948699731068,
+      "epsilon_decay": 0.9930348527531493
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.4040243890097674,
+    "mean_action_time_ms": 0.036584955640137196
+  },
+  {
+    "run": 11,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 3.2355091596704855e-05,
+      "epsilon_decay": 0.9966960722185803
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.4093748333398253,
+    "mean_action_time_ms": 0.036340006646544985
+  },
+  {
+    "run": 10,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.0002248233019179262,
+      "epsilon_decay": 0.996317469943487
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.4524322916792396,
+    "mean_action_time_ms": 0.036346428600760795
+  },
+  {
+    "run": 1,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 2.175646491377571e-05,
+      "epsilon_decay": 0.9971918763347514
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.4876341666677035,
+    "mean_action_time_ms": 0.0365915268776007
+  },
+  {
+    "run": 0,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 2.029463168309443e-05,
+      "epsilon_decay": 0.9947908117788331
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.5254980416890855,
+    "mean_action_time_ms": 0.03671154166416576
+  },
+  {
+    "run": 12,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 8.761836058237678e-05,
+      "epsilon_decay": 0.9967204472315593
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.5322248470038176,
+    "mean_action_time_ms": 0.03681915775329495
+  },
+  {
+    "run": 14,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 4.6304963625358526e-05,
+      "epsilon_decay": 0.997603334821299
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.553137055656407,
+    "mean_action_time_ms": 0.036588578523757555
+  },
+  {
+    "run": 13,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 3.361109624158147e-05,
+      "epsilon_decay": 0.997838538310479
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.5588639446650632,
+    "mean_action_time_ms": 0.03672310283097128
+  },
+  {
+    "run": 9,
+    "config": {
+      "gamma": 0.99,
+      "epsilon": 1.0,
+      "epsilon_min": 0.01,
+      "batch_size": 64,
+      "buffer_size": 10000,
+      "hidden_sizes": [
+        128,
+        128
+      ],
+      "target_update_freq": 1000,
+      "lr": 0.0005068882288955638,
+      "epsilon_decay": 0.9987828614966139
+    },
+    "mean_score": 1.0,
+    "std_score": 0.0,
+    "mean_train_time": 1.7370544166769832,
+    "mean_action_time_ms": 0.0515198601448598
+  }
+]

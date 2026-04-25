@@ -1,92 +1,93 @@
+# envs/tictactoe.py
+
 import numpy as np
-from typing import List, Tuple, Optional
 import copy
+from typing import List, Tuple, Optional
 from envs.base_env import BaseEnv
+from agents.random_agent import RandomAgent
 
 
 class TicTacToe(BaseEnv):
     """
-    Environnement TicTacToe (Morpion) 3x3.
-    
-    Deux joueurs s'affrontent :
-        - Joueur 0 joue les X
-        - Joueur 1 joue les O (peut être un agent Random)
-    
-    Actions:
-        0-8 → cases de la grille, numérotées de gauche à droite, haut en bas :
-            0 | 1 | 2
-            ---------
-            3 | 4 | 5
-            ---------
-            6 | 7 | 8
-    
-    Récompenses (du point de vue du joueur qui vient de jouer) :
-        +1.0  → victoire
-        -1.0  → défaite
-         0.5  → match nul
-         0.0  → coup intermédiaire
-    
-    State encoding (taille 27) :
-        - Indices 0-8  : 1.0 si case occupée par joueur 0, 0 sinon
-        - Indices 9-17 : 1.0 si case occupée par joueur 1, 0 sinon
-        - Indices 18-26: 1.0 si case vide, 0 sinon
-        → Taille totale : 27
-        
-    Note: On n'encode PAS le joueur courant dans le vecteur d'état,
-    car le réseau de neurones jouera toujours du point de vue du joueur courant
-    (on peut retourner le vecteur si nécessaire).
+    Environnement TicTacToe (Morpion) 3x3 — joueur 0 (X) vs Random (O).
+
+    L'agent est toujours le joueur 0 (X) et commence toujours.
+    Après chaque coup de l'agent, l'adversaire random joue immédiatement.
+    L'agent voit cet env comme un env 1 joueur classique.
+
+    Actions :
+        0-8 -> cases de la grille de gauche à droite, haut en bas
+
+    Récompenses (du point de vue de l'agent / joueur 0) :
+        +1.0  victoire de l'agent
+        -1.0  victoire du random
+         0.0  nul ou coup intermédiaire
+
+    État (27 valeurs, toujours du point de vue du joueur 0) :
+        -  0.. 8 : cases occupées par l'agent (X)
+        -  9..17 : cases occupées par le random (O)
+        - 18..26 : cases vides
     """
 
-    # Combinaisons gagnantes (indices de cases)
     _WINNING_COMBOS = [
-        (0, 1, 2), (3, 4, 5), (6, 7, 8),  # lignes
-        (0, 3, 6), (1, 4, 7), (2, 5, 8),  # colonnes
-        (0, 4, 8), (2, 4, 6),              # diagonales
+        (0, 1, 2), (3, 4, 5), (6, 7, 8),
+        (0, 3, 6), (1, 4, 7), (2, 5, 8),
+        (0, 4, 8), (2, 4, 6),
     ]
 
-    def __init__(self):
-        self._board = np.zeros(9, dtype=np.int8)  # 0=vide, 1=joueur0, 2=joueur1
-        self._current_player = 0
-        self._done = False
-        self._winner: Optional[int] = None  # 0, 1, ou None (nul)
+    def __init__(self, seed: int = None):
+        self._board          = np.zeros(9, dtype=np.int8)
+        self._done           = False
+        self._winner: Optional[int] = None
+        self._random         = RandomAgent(seed=seed)
 
-    # -------------------------------------------------------------------------
-    # Implémentation des méthodes abstraites
-    # -------------------------------------------------------------------------
+    # ─────────────────────────────────────────────────────────────
+    # Interface BaseEnv
+    # ─────────────────────────────────────────────────────────────
 
     def reset(self) -> np.ndarray:
-        self._board = np.zeros(9, dtype=np.int8)
-        self._current_player = 0
-        self._done = False
+        self._board  = np.zeros(9, dtype=np.int8)
+        self._done   = False
         self._winner = None
         return self.get_state()
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool]:
-        assert not self._done, "La partie est terminée, appelez reset()."
+        """
+        1. L'agent (X / valeur 1) joue `action`
+        2. Si la partie continue, le random (O / valeur 2) joue
+        3. Retourne (état, reward_agent, done)
+        """
+        assert not self._done, "Partie terminée, appelez reset()."
         assert action in self.available_actions(), f"Action illégale : {action}"
 
-        # Placer le pion
-        self._board[action] = self._current_player + 1  # 1 ou 2
+        # ── Coup de l'agent (joueur 0 = valeur 1) ────────────────
+        self._board[action] = 1
 
-        # Vérifier victoire
-        reward = 0.0
-        if self._check_winner(self._current_player):
-            self._done = True
-            self._winner = self._current_player
-            reward = 1.0
-        elif len(self.available_actions()) == 0:
-            # Match nul (on vérifie APRÈS avoir placé, donc on re-check)
-            empty = np.sum(self._board == 0)
-            if empty == 0:
-                self._done = True
-                self._winner = None
-                reward = 0.5
-        
-        # Changer de joueur si la partie continue
-        if not self._done:
-            self._current_player = 1 - self._current_player
+        if self._check_winner(1):
+            self._done   = True
+            self._winner = 0
+            return self.get_state(), 1.0, True
 
-        return self.get_state(), reward, self._done
+        if np.all(self._board != 0):
+            self._done   = True
+            self._winner = None
+            return self.get_state(), 0.0, True
+
+        # ── Coup du random (joueur 1 = valeur 2) ─────────────────
+        random_action              = self._random.select_action(self)
+        self._board[random_action] = 2
+
+        if self._check_winner(2):
+            self._done   = True
+            self._winner = 1
+            return self.get_state(), -1.0, True
+
+        if np.all(self._board != 0):
+            self._done   = True
+            self._winner = None
+            return self.get_state(), 0.0, True
+
+        return self.get_state(), 0.0, False
 
     def available_actions(self) -> List[int]:
         if self._done:
@@ -97,15 +98,31 @@ class TicTacToe(BaseEnv):
         return self._done
 
     def get_state(self) -> np.ndarray:
+        """État toujours du point de vue du joueur 0 (l'agent)."""
         state = np.zeros(27, dtype=np.float32)
         for i in range(9):
-            if self._board[i] == 1:    # joueur 0
+            if self._board[i] == 1:        # case de l'agent
                 state[i] = 1.0
-            elif self._board[i] == 2:  # joueur 1
+            elif self._board[i] == 2:      # case du random
                 state[9 + i] = 1.0
-            else:                      # vide
+            else:                          # case vide
                 state[18 + i] = 1.0
         return state
+
+    def score(self) -> float:
+        """
+        Score final du point de vue de l'agent (joueur 0) :
+            1.0  victoire
+            0.5  nul
+            0.0  défaite
+        """
+        if not self._done:
+            raise ValueError("score() appelé avant la fin de la partie.")
+        if self._winner == 0:
+            return 1.0
+        if self._winner is None:
+            return 0.5
+        return 0.0
 
     def clone(self) -> "TicTacToe":
         return copy.deepcopy(self)
@@ -119,13 +136,19 @@ class TicTacToe(BaseEnv):
             if row < 2:
                 print("---+---+---")
         if self._done:
-            if self._winner is not None:
-                print(f"\n→ Joueur {self._winner} ({'X' if self._winner == 0 else 'O'}) gagne !")
+            if self._winner == 0:
+                print("\n→ Agent (X) gagne !")
+            elif self._winner == 1:
+                print("\n→ Random (O) gagne !")
             else:
                 print("\n→ Match nul !")
         else:
-            print(f"\n→ Tour du joueur {self._current_player} ({'X' if self._current_player == 0 else 'O'})")
+            print("\n→ Tour de l'agent (X)")
         print()
+
+    # ─────────────────────────────────────────────────────────────
+    # Propriétés
+    # ─────────────────────────────────────────────────────────────
 
     @property
     def state_size(self) -> int:
@@ -137,24 +160,14 @@ class TicTacToe(BaseEnv):
 
     @property
     def current_player(self) -> int:
-        return self._current_player
+        return 0
 
-    def score(self) -> float:
-        """Score pour le joueur 0 : 1=victoire, 0.5=nul, 0=défaite."""
-        if self._winner == 0:
-            return 1.0
-        elif self._winner is None and self._done:
-            return 0.5
-        return 0.0
+    # ─────────────────────────────────────────────────────────────
+    # Méthode privée
+    # ─────────────────────────────────────────────────────────────
 
-    # -------------------------------------------------------------------------
-    # Méthodes privées
-    # -------------------------------------------------------------------------
-
-    def _check_winner(self, player: int) -> bool:
-        """Vérifie si le joueur donné a gagné."""
-        val = player + 1  # 1 pour joueur 0, 2 pour joueur 1
+    def _check_winner(self, value: int) -> bool:
         for combo in self._WINNING_COMBOS:
-            if all(self._board[i] == val for i in combo):
+            if all(self._board[i] == value for i in combo):
                 return True
         return False

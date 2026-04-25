@@ -1,0 +1,46 @@
+{
+  "1000": {
+    "random": {
+      "mean_score": 0.627,
+      "mean_length": 7.63,
+      "mean_action_time_ms": 0.0013
+    },
+    "tql": {
+      "mean_score": 1.0,
+      "mean_length": 5.0,
+      "mean_action_time_ms": 0.0062
+    }
+  },
+  "10000": {
+    "random": {
+      "mean_score": 0.66,
+      "mean_length": 7.68,
+      "mean_action_time_ms": 0.0013
+    },
+    "tql": {
+      "mean_score": 1.0,
+      "mean_length": 5.0,
+      "mean_action_time_ms": 0.006
+    }
+  },
+  "100000": {
+    "random": {
+      "mean_score": 0.656,
+      "mean_length": 7.58,
+      "mean_action_time_ms": 0.0012
+    },
+    "tql": {
+      "mean_score": 1.0,
+      "mean_length": 5.0,
+      "mean_action_time_ms": 0.006
+    }
+  },
+  "1000000": {
+    "random": {
+      "mean_score": 0.622,
+      "mean_length": 7.64,
+      "mean_action_time_ms": 0.0012
+    },
+    "tql": "N/A"
+  }
+}

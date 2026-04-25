@@ -1,0 +1,38 @@
+[
+  {
+    "run": 3,
+    "score": 0.93,
+    "duration_s": 62.9,
+    "gamma": 0.99,
+    "batch_size": 64,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 24139,
+    "lr": 0.002482
+  },
+  {
+    "run": 6,
+    "score": 0.93,
+    "duration_s": 66.8,
+    "gamma": 0.99,
+    "batch_size": 64,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 79676,
+    "lr": 0.00018
+  },
+  {
+    "run": 7,
+    "score": 0.93,
+    "duration_s": 64.6,
+    "gamma": 0.99,
+    "batch_size": 64,
+    "epsilon": 1.0,
+    "epsilon_min": 0.01,
+    "epsilon_decay": 0.995,
+    "buffer_size": 52533,
+    "lr": 0.000796
+  }
+]

@@ -1,0 +1,13 @@
+# configs/config_ddqner.yaml
+# Double DQN + Experience Replay explicite
+lr                 : 8.938e-3
+gamma              : 0.99
+epsilon            : 1.0
+epsilon_min        : 0.01
+epsilon_decay      : 0.99995
+batch_size         : 128
+buffer_size        : 13946
+hidden_sizes       : [128, 128]
+target_update_freq : 369
+warmup_steps       : 1000
+updates_per_step   : 1

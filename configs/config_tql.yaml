@@ -1,0 +1,5 @@
+alpha: 0.1 #vitesse d'apprentissage
+gamma: 0.99 #vision long terme
+epsilon: 1.0 #exploration
+epsilon_min: 0.01
+epsilon_decay: 0.995

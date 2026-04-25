@@ -1,0 +1,20 @@
+{
+  "1000": {
+    "mean_score": 0.9300000000000058,
+    "std_score": 0.0,
+    "mean_length": 8.0,
+    "std_length": 0.0
+  },
+  "10000": {
+    "mean_score": 0.9300000000000058,
+    "std_score": 0.0,
+    "mean_length": 8.0,
+    "std_length": 0.0
+  },
+  "100000": {
+    "mean_score": 0.9300000000000058,
+    "std_score": 0.0,
+    "mean_length": 8.0,
+    "std_length": 0.0
+  }
+}
