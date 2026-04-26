@@ -1,0 +1,5 @@
+# configs/config_reinforce_mb.yaml
+# REINFORCE avec baseline constante = moyenne des retours de l'épisode
+gamma: 0.99
+lr: 0.001
+hidden_sizes: [128, 128]
