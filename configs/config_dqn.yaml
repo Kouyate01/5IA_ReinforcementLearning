@@ -1,10 +1,11 @@
 # configs/config_dqn.yaml
 # Deep Q-Learning (vanilla)
-gamma: 0.99
-batch_size: 64
-epsilon: 1.0
-epsilon_min: 0.01
-epsilon_decay: 0.995
-buffer_size: 10000
-lr: 0.00077
-target_update_freq: 1680
+lr                 : 3.087e-3
+gamma              : 0.99
+epsilon            : 1.0
+epsilon_min        : 0.01
+epsilon_decay      : 0.9995
+batch_size         : 128
+buffer_size        : 50000
+hidden_sizes       : [128, 128]
+target_update_freq : 859

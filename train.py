@@ -77,7 +77,7 @@ MAX_STEPS_PER_ENV = {
     "line_world": 50,
     "grid_world": 100, #200,
     "tictactoe":  50,
-    "bobail":     200,
+    "bobail":     100,
 }
 
 
