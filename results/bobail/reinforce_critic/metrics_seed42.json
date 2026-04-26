@@ -1,17 +1,17 @@
 {
   "1000": {
-    "mean_score": 1.0,
-    "mean_length": 4.426,
-    "mean_action_time_ms": 1.1165165838228481
+    "mean_score": 0.994,
+    "mean_length": 5.198,
+    "mean_action_time_ms": 4.622869372835597
   },
   "10000": {
     "mean_score": 1.0,
-    "mean_length": 4.388,
-    "mean_action_time_ms": 1.0421205560627826
+    "mean_length": 4.742,
+    "mean_action_time_ms": 1.2015750316329739
   },
   "100000": {
-    "mean_score": 1.0,
-    "mean_length": 4.24,
-    "mean_action_time_ms": 1.102558962259725
+    "mean_score": 0.996,
+    "mean_length": 4.59,
+    "mean_action_time_ms": 0.965004095861512
   }
 }
