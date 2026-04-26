@@ -55,13 +55,16 @@ BOARD_CANVAS_SIZE = CELL_SIZE * 3 + PADDING * 2
 # interface : "rl" = select_action(env, greedy=True)
 #             "act" = .act(env)
 AGENT_REGISTRY = {
-    "dqn":        ("agents.dqn",    "DeepQLearning",                             "rl"),
-    "ddqn":       ("agents.ddqn",   "DoubleDeepQLearning",                       "rl"),
-    "ddqner":     ("agents.ddqner", "DoubleDeepQLearningWithExperienceReplay",    "rl"),
-    "ddqnper":    ("agents.ddqnper","DoubleDeepQLearningWithPrioritizedExperienceReplay", "rl"),
-    "tql":        ("agents.tabular_q_learning", "TabularQLearning",              "rl"),
-    "apprentice": ("agents.expert_apprentice", "ExpertApprenticeAgent",                 "act"),
-    "ppo":        ("agents.ppo",    "PPOAgent",                                  "act"),
+    "dqn":              ("agents.dqn",     "DeepQLearning",                                      "rl"),
+    "ddqn":             ("agents.ddqn",    "DoubleDeepQLearning",                                 "rl"),
+    "ddqner":           ("agents.ddqner",  "DoubleDeepQLearningWithExperienceReplay",             "rl"),
+    "ddqnper":          ("agents.ddqnper", "DoubleDeepQLearningWithPrioritizedExperienceReplay",  "rl"),
+    "tql":              ("agents.tabular_q_learning", "TabularQLearning",                         "rl"),
+    "reinforce":        ("agents.reinforce", "REINFORCE",                                         "rl"),
+    "reinforce_critic": ("agents.reinforce_critic", "REINFORCEWithCritic",                        "rl"),
+    "reinforce_mb":     ("agents.reinforce_mean_baseline", "REINFORCEMeanBaseline",               "rl"),
+    "apprentice":       ("agents.expert_apprentice",  "ExpertApprenticeAgent",                    "act"),
+    "ppo":              ("agents.ppo",     "PPOAgent",                                            "act"),
 }
 
 

@@ -199,7 +199,7 @@ class DeepQLearning:
         episode_lengths    = []
         losses             = []
         best_score         = -float("inf")
-        target_updates     = 0   # [TARGET NETWORK]
+        target_updates     = 0  
 
         for episode in range(1, n_episodes + 1):
             # ── Épisode d'entraînement ─────────────────────────────────────
@@ -215,7 +215,7 @@ class DeepQLearning:
                 self._buffer.append((state, action, reward, next_state, done))
                 state = next_state
 
-                self._total_steps += 1  # [TARGET NETWORK]
+                self._total_steps += 1 
 
                 # Apprentissage si le buffer est suffisamment rempli
                 if len(self._buffer) >= self.batch_size:
@@ -223,9 +223,9 @@ class DeepQLearning:
                     losses.append(loss)
 
                 # [TARGET NETWORK] Sync hard-copy toutes les C steps
-                if self._total_steps % self.target_update_freq == 0:  # [TARGET NETWORK]
-                    self._update_target_network()                       # [TARGET NETWORK]
-                    target_updates += 1                                 # [TARGET NETWORK]
+                if self._total_steps % self.target_update_freq == 0:  
+                    self._update_target_network()                       
+                    target_updates += 1                                 
 
                 ep_score += reward
                 ep_steps += 1
@@ -246,7 +246,7 @@ class DeepQLearning:
                 writer.add_scalar("train/mean_length",    mean_length,   episode)
                 writer.add_scalar("train/epsilon",        self.epsilon,  episode)
                 writer.add_scalar("train/mean_loss",      mean_loss,     episode)
-                writer.add_scalar("train/target_updates", target_updates, episode)  # [TARGET NETWORK]
+                writer.add_scalar("train/target_updates", target_updates, episode) 
 
             # ── Évaluation aux checkpoints ─────────────────────────────────
             if episode in self.CHECKPOINTS and episode not in checkpoints_done:
@@ -269,7 +269,7 @@ class DeepQLearning:
                       f"score={metrics['mean_score']:.3f} | "
                       f"length={metrics['mean_length']:.1f} | "
                       f"loss={np.mean(losses[-500:]):.4f} | "
-                      f"target_updates={target_updates}"           # [TARGET NETWORK]
+                      f"target_updates={target_updates}"           
                       f"{' ← BEST' if is_best else ''}")
 
         writer.close()
@@ -331,9 +331,9 @@ class DeepQLearning:
         # Q_online(s, a) — réseau entraîné
         q_current = self._q_net(states_t).gather(1, actions_t.unsqueeze(1)).squeeze(1)
 
-        # Cible : r + gamma * max Q_target(s', .) si non terminal  # [TARGET NETWORK]
+        # Cible : r + gamma * max Q_target(s', .) si non terminal 
         with torch.no_grad():
-            q_next  = self._target_net(next_states_t).max(1)[0]    # [TARGET NETWORK]
+            q_next  = self._target_net(next_states_t).max(1)[0]   
             targets = rewards_t + self.gamma * q_next * (1 - dones_t)
 
         loss = self._criterion(q_current, targets)
@@ -353,7 +353,7 @@ class DeepQLearning:
     def get_state_dict(self) -> dict:
         return {
             "q_net":              self._q_net.state_dict() if self._q_net else None,
-            "target_net":         self._target_net.state_dict() if self._target_net else None,  # [TARGET NETWORK]
+            "target_net":         self._target_net.state_dict() if self._target_net else None, 
             "lr":                 self.lr,
             "gamma":              self.gamma,
             "epsilon":            self.epsilon,
@@ -362,8 +362,8 @@ class DeepQLearning:
             "batch_size":         self.batch_size,
             "buffer_size":        self.buffer_size,
             "hidden_sizes":       self.hidden_sizes,
-            "target_update_freq": self.target_update_freq,  # [TARGET NETWORK]
-            "total_steps":        self._total_steps,        # [TARGET NETWORK]
+            "target_update_freq": self.target_update_freq,  
+            "total_steps":        self._total_steps,       
         }
 
     def load_state_dict(self, data: dict, state_size: int, action_size: int) -> None:
@@ -375,10 +375,10 @@ class DeepQLearning:
         self.batch_size         = data["batch_size"]
         self.buffer_size        = data["buffer_size"]
         self.hidden_sizes       = data["hidden_sizes"]
-        self.target_update_freq = data.get("target_update_freq", 1_000)  # [TARGET NETWORK]
-        self._total_steps       = data.get("total_steps", 0)             # [TARGET NETWORK]
+        self.target_update_freq = data.get("target_update_freq", 1_000)  
+        self._total_steps       = data.get("total_steps", 0)             
         self._ensure_networks(state_size, action_size)
         if data["q_net"] is not None:
             self._q_net.load_state_dict(data["q_net"])
-        if data.get("target_net") is not None:                            # [TARGET NETWORK]
-            self._target_net.load_state_dict(data["target_net"])          # [TARGET NETWORK]
+        if data.get("target_net") is not None:                           
+            self._target_net.load_state_dict(data["target_net"])          

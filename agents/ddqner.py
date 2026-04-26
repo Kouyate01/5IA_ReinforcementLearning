@@ -19,7 +19,6 @@ class DoubleDeepQLearningWithExperienceReplay:
 
     DIFFÉRENCE AVEC DoubleDeepQLearning
     ─────────────────────────────────────
-    En réalité, le Double DQN basique utilise déjà un replay buffer simple.
     Cette classe rend le replay buffer plus explicite et configurable, et
     ajoute les éléments pédagogiques clés :
 
@@ -295,7 +294,7 @@ class DoubleDeepQLearningWithExperienceReplay:
 
         self._optimizer.zero_grad()
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(self._q_net.parameters(), max_norm=10.0) #gradient clipping pour éviter qu'un lr élevé (1e-3) fasse exploser les gradients dès les premiers batchs
+        torch.nn.utils.clip_grad_norm_(self._q_net.parameters(), max_norm=1.0) #gradient clipping pour éviter qu'un lr élevé (1e-3) fasse exploser les gradients dès les premiers batchs
         self._optimizer.step()
 
         return loss.item()
