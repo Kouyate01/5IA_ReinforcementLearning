@@ -1,0 +1,6 @@
+# configs/config_reinforce_critic.yaml
+# REINFORCE avec baseline apprise par un réseau critique V(s; w)
+gamma: 0.99
+lr: 0.001
+value_coef: 0.5
+hidden_sizes: [128, 128]

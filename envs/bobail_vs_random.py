@@ -50,7 +50,7 @@ class BobailVsRandom(Bobail):
         # --- Coup de l'agent ---
         state, reward, done = super().step(action)
         if done:
-            return state, reward, done
+            return state, self._agent_reward(), done
 
         # --- Tour(s) complet(s) de l'adversaire ---
         state = self._play_random_if_opponent_turn(state)

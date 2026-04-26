@@ -128,6 +128,18 @@ def make_agent(agent_name: str, config: dict = None):
         from agents.ddqnper import DoubleDeepQLearningWithPrioritizedExperienceReplay
         return DoubleDeepQLearningWithPrioritizedExperienceReplay.from_config(config)
 
+    elif agent_name == "reinforce":
+        from agents.reinforce import REINFORCE
+        return REINFORCE.from_config(config)
+
+    elif agent_name == "reinforce_mb":
+        from agents.reinforce_mean_baseline import REINFORCEMeanBaseline
+        return REINFORCEMeanBaseline.from_config(config)
+
+    elif agent_name == "reinforce_critic":
+        from agents.reinforce_critic import REINFORCEWithCritic
+        return REINFORCEWithCritic.from_config(config)
+
     raise ValueError(f"Agent inconnu : {agent_name}")
 
 
@@ -320,7 +332,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--agent", type=str, default="tql",
-        choices=["tql", "dqn", "ddqn", "ddqner", "ddqnper"],
+        choices=["tql", "dqn", "ddqn", "ddqner", "ddqnper",
+                 "reinforce", "reinforce_mb", "reinforce_critic"],
     )
     parser.add_argument(
         "--env", type=str, default="line_world",

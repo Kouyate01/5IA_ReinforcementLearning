@@ -1,0 +1,5 @@
+# configs/config_reinforce.yaml
+# REINFORCE — gradient de politique Monte-Carlo sans baseline
+gamma: 0.99
+lr: 0.001
+hidden_sizes: [128, 128]

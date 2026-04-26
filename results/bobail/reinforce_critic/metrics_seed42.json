@@ -1,0 +1,17 @@
+{
+  "1000": {
+    "mean_score": 1.0,
+    "mean_length": 4.426,
+    "mean_action_time_ms": 1.1165165838228481
+  },
+  "10000": {
+    "mean_score": 1.0,
+    "mean_length": 4.388,
+    "mean_action_time_ms": 1.0421205560627826
+  },
+  "100000": {
+    "mean_score": 1.0,
+    "mean_length": 4.24,
+    "mean_action_time_ms": 1.102558962259725
+  }
+}
