@@ -69,13 +69,13 @@ print("Saved: figures_reinforce/tictactoe_progression.png")
 # 2. Bobail — score + longueur
 # ──────────────────────────────────────────────────────────────────────────────
 bobail_score = {
-    "REINFORCE":        [0.998, 0.998, 0.996],
+    "REINFORCE":        [0.994, 1.000, 0.996],
     "REINFORCE MB":     [1.000, 1.000, 1.000],
     "REINFORCE Critic": [0.994, 1.000, 0.996],
 }
 bobail_length = {
-    "REINFORCE":        [6.828, 7.144, 7.198],
-    "REINFORCE MB":     [5.090, 4.956, 5.232],
+    "REINFORCE":        [7.200, 7.284, 8.304],
+    "REINFORCE MB":     [4.732, 4.732, 4.862],
     "REINFORCE Critic": [5.198, 4.742, 4.590],
 }
 

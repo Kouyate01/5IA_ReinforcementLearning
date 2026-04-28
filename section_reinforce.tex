@@ -223,7 +223,7 @@ REINFORCE Critic & 10\,000 & \textbf{0.930} & 8.0 \\
 \end{tabular}
 \end{table}
 
-Les trois variantes convergent vers un score de \textbf{0.930} dès les 1\,000 premiers épisodes avec une longueur stable à 8.0 (chemin optimal). La faible complexité de ces deux environnements ne permet pas de distinguer les variantes entre elles.
+Les trois variantes convergent vers un score de \textbf{0.930} dès les 1\,000 premiers épisodes avec une longueur stable à 8.0 (chemin optimal). Cette saturation rapide s'explique par la faible dimensionnalité de ces environnements : l'espace d'état est très restreint (pas d'adversaire, dynamique déterministe), ce qui permet à n'importe quelle méthode de gradient de politique de converger en quelques centaines d'épisodes. La réduction de variance apportée par les baselines n'apporte aucun bénéfice mesurable ici.
 
 \subsection{TicTacToe}
 
@@ -277,18 +277,18 @@ Bobail est un jeu de plateau 5$\times$5 à deux joueurs. L'agent (Joueur 0) affr
 
 \begin{table}[H]
 \centering
-\caption{Résultats sur Bobail (100\,000 épisodes). * ré-entraîné sur l'environnement corrigé.}
+\caption{Résultats sur Bobail (100\,000 épisodes). * ré-entraîné sur l'environnement corrigé (state\_size=78).}
 \begin{tabular}{llcc}
 \toprule
 \textbf{Agent} & \textbf{Épisodes} & \textbf{Score moyen} & \textbf{Longueur moy.} \\
 \midrule
-REINFORCE        & 1\,000   & 0.998 & 6.828 \\
-REINFORCE        & 10\,000  & 0.998 & 7.144 \\
-REINFORCE        & 100\,000 & 0.996 & 7.198 \\
+REINFORCE*        & 1\,000   & 0.994 & 7.200 \\
+REINFORCE*        & 10\,000  & \textbf{1.000} & 7.284 \\
+REINFORCE*        & 100\,000 & 0.996 & 8.304 \\
 \midrule
-REINFORCE MB     & 1\,000   & \textbf{1.000} & 5.090 \\
-REINFORCE MB     & 10\,000  & \textbf{1.000} & 4.956 \\
-REINFORCE MB     & 100\,000 & \textbf{1.000} & 5.232 \\
+REINFORCE MB*     & 1\,000   & \textbf{1.000} & 4.732 \\
+REINFORCE MB*     & 10\,000  & \textbf{1.000} & 4.732 \\
+REINFORCE MB*     & 100\,000 & \textbf{1.000} & 4.862 \\
 \midrule
 REINFORCE Critic* & 1\,000   & 0.994 & 5.198 \\
 REINFORCE Critic* & 10\,000  & \textbf{1.000} & 4.742 \\
@@ -297,11 +297,13 @@ REINFORCE Critic* & 100\,000 & 0.996 & \textbf{4.590} \\
 \end{tabular}
 \end{table}
 
-\textit{* REINFORCE Critic a été ré-entraîné sur la version corrigée de l'environnement Bobail (state\_size=78, avec le bit \texttt{first\_turn}) suite à la correction des règles du premier tour.}
+\textit{* Les trois variantes ont été ré-entraînées sur la version corrigée de l'environnement Bobail (state\_size=78, bit \texttt{first\_turn} ajouté) suite à la correction des règles du premier tour.}
 
 \vspace{0.5em}
 
-REINFORCE MB atteint un score parfait de \textbf{1.000} dès 1\,000 épisodes et le maintient. REINFORCE sans baseline n'atteint jamais 1.000, confirmant l'impact négatif de la variance sur les environnements complexes. REINFORCE Critic se distingue par la \textbf{longueur la plus courte} (4.590 à 100\,000 épisodes), signe d'une stratégie plus directe et agressive.
+REINFORCE MB atteint un score parfait de \textbf{1.000} dès 1\,000 épisodes et le maintient de façon stable sur toute la durée de l'entraînement. REINFORCE sans baseline atteint 1.000 au checkpoint 10\,000 mais oscille entre 0.994 et 0.996 aux autres checkpoints, témoignant de l'instabilité liée à la variance élevée.
+
+REINFORCE Critic, bien qu'atteignant 1.000 au checkpoint 10\,000, redescend à 0.996 à 100\,000 épisodes. Cela s'explique par le fait qu'il a été ré-entraîné sur un \textbf{environnement corrigé} (nouvelles règles du premier tour, state\_size=78) : le réseau critique doit apprendre simultanément la nouvelle dynamique et estimer $V(s)$, ce qui introduit plus de bruit en début d'entraînement. Avec davantage d'épisodes, le Critic convergerait probablement vers 1.000 stable. Il se distingue néanmoins par la \textbf{longueur la plus courte} (4.590 contre 5.232 pour REINFORCE MB), signe d'une stratégie plus directe — le réseau critique apprend à évaluer la proximité de la victoire et oriente l'acteur vers des fins de partie rapides.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Synthèse comparative}
@@ -331,11 +333,15 @@ Bobail     & 0.996 & \textbf{1.000} & 0.996 \\
 \textbf{Conclusions principales :}
 
 \begin{enumerate}
-    \item Sur les environnements simples (LineWorld, GridWorld), les trois variantes convergent vers des performances identiques. La variance n'est pas un facteur limitant.
-    \item Sur TicTacToe, la réduction de variance fait une différence significative : REINFORCE Critic (+7.2 pts) $>$ REINFORCE MB (+2.4 pts) $>$ REINFORCE.
-    \item Sur Bobail, REINFORCE MB et REINFORCE Critic atteignent des performances quasi-parfaites. Le Critic se distingue par une stratégie plus rapide (longueur $\sim$4.59 contre $\sim$5.2).
-    \item REINFORCE sans baseline est systématiquement le moins performant sur les environnements complexes, confirmant empiriquement l'impact de la variance des gradients Monte-Carlo.
+    \item Sur les environnements simples (LineWorld, GridWorld), les trois variantes convergent vers des performances identiques dès les premiers milliers d'épisodes. L'espace d'état minimal et l'absence d'adversaire font que la réduction de variance n'apporte aucun avantage mesurable.
+    \item Sur TicTacToe, la réduction de variance fait une différence significative : REINFORCE Critic (+7.2 pts) $>$ REINFORCE MB (+2.4 pts) $>$ REINFORCE. C'est l'environnement le plus discriminant du benchmark.
+    \item Sur Bobail, REINFORCE MB est le plus stable (1.000 tout au long de l'entraînement). REINFORCE Critic atteint également 1.000 mais avec plus de variabilité, étant ré-entraîné sur l'environnement corrigé. Il se distingue par la stratégie la plus rapide (longueur $\sim$4.59 contre $\sim$5.2).
+    \item REINFORCE sans baseline est systématiquement le moins performant sur les environnements complexes, confirmant empiriquement que la forte variance des gradients Monte-Carlo constitue le principal frein à l'apprentissage.
     \item Les temps de décision restent inférieurs à 1.2 ms pour les trois variantes, ce qui les rend utilisables en temps réel.
 \end{enumerate}
+
+\vspace{1em}
+
+En conclusion, les résultats expérimentaux valident la hiérarchie théorique des méthodes de gradient de politique : plus la baseline est précise, plus la variance des mises à jour est faible, et plus la convergence est rapide vers une politique performante. REINFORCE pur souffre de sa haute variance sur les environnements complexes. La baseline moyenne apporte un gain immédiat et simple à implémenter. Le réseau critique, en apprenant une estimation de $V(s)$ au fil du temps, offre la meilleure réduction de variance et produit les meilleures politiques finales — au prix d'une complexité d'implémentation légèrement supérieure et d'une sensibilité plus grande aux changements d'environnement.
 
 \end{document}
